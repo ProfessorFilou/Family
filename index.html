@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FamilyDash</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#171a33;--card:#232849;--card2:#2c3260;--txt:#f2f3ff;--mut:#9aa0c9;--violet:#8b7bff;--mint:#3ee0b5;--coral:#ff7a8a;--sun:#ffc94a;--r:28px}
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%}
+body{font-family:Nunito,system-ui,sans-serif;background:radial-gradient(1200px 600px at 10% -10%,#2b2f6b55,transparent),var(--bg);color:var(--txt);padding:max(16px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
+button,input,select{font:inherit;color:inherit}
+.hide{display:none!important}
+/* login */
+#login{min-height:90vh;display:grid;place-items:center}
+.lbox{background:var(--card);border-radius:36px;padding:36px 28px;width:min(400px,100%);text-align:center;box-shadow:0 20px 60px #0006}
+.lbox h1{font-size:28px;font-weight:900;margin:10px 0 6px}
+.lbox p{color:var(--mut);font-size:14px;margin-bottom:20px}
+.lbox .logo{width:84px;height:84px;margin:auto;border-radius:30px;background:linear-gradient(135deg,var(--violet),var(--mint));display:grid;place-items:center;animation:bob 3s ease-in-out infinite}
+input,select{width:100%;background:var(--card2);border:2px solid transparent;border-radius:18px;padding:13px 16px;outline:none;margin-bottom:10px}
+input:focus,select:focus{border-color:var(--violet)}
+.btn{background:var(--violet);border:0;border-radius:18px;padding:13px 20px;font-weight:900;cursor:pointer;transition:transform .15s}
+.btn:hover{transform:scale(1.03)}.btn:active{transform:scale(.96)}
+.btn.full{width:100%}.err{color:var(--coral);font-size:13px;min-height:18px;margin-top:6px}
+/* header */
+header{max-width:1100px;margin:0 auto 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header h1{font-size:26px;font-weight:900}header small{color:var(--mut);font-weight:700}
+.iconbtn{width:46px;height:46px;border-radius:50%;background:var(--card);border:0;cursor:pointer;display:grid;place-items:center;font-size:20px}
+.grid{max-width:1100px;margin:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:18px}
+.card{background:var(--card);border-radius:var(--r);padding:20px;position:relative;overflow:hidden}
+.card h2{font-size:18px;font-weight:900;display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.card h2 i{width:38px;height:38px;border-radius:14px;display:grid;place-items:center;font-style:normal}
+.wide{grid-column:1/-1}
+/* rows */
+.row{display:flex;align-items:center;gap:12px;background:var(--card2);border-radius:20px;padding:11px 14px;margin-bottom:8px;animation:pop .3s}
+.row.done .t{opacity:.45;text-decoration:line-through}
+.t{flex:1;font-weight:700;overflow-wrap:anywhere}.sub{font-size:12px;color:var(--mut);font-weight:700}
+.chk{width:28px;height:28px;border-radius:50%;border:3px solid var(--c,var(--violet));background:none;cursor:pointer;flex:none;display:grid;place-items:center;transition:.2s}
+.done .chk{background:var(--c,var(--violet))}
+.chk svg{width:14px;height:14px;stroke:#fff;stroke-width:4;fill:none;opacity:0}.done .chk svg{opacity:1}
+.x{background:none;border:0;color:var(--mut);cursor:pointer;font-size:18px}
+.add{display:flex;gap:8px;margin-bottom:12px}.add input{margin:0}
+.add .btn{padding:0 18px}
+.empty{color:var(--mut);text-align:center;padding:14px;font-weight:700}
+.trow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}.trow *{margin:0}
+.trow input,.trow select{padding:10px 12px;font-size:13px}
+/* weather */
+.now{display:flex;align-items:center;gap:16px}
+.now svg{width:92px;height:92px;flex:none}
+.temp{font-size:54px;font-weight:900;line-height:1}
+.days{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px}
+.day{background:var(--card2);border-radius:20px;padding:10px 4px;text-align:center;font-size:13px;font-weight:700}
+.day svg{width:40px;height:40px}
+.ev{border-left:5px solid var(--c);}
+/* dialog */
+dialog{border:0;border-radius:30px;background:var(--card);color:var(--txt);padding:24px;width:min(440px,92vw)}
+dialog::backdrop{background:#000a}dialog label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:6px 0 4px}
+/* weather anim */
+.spin{transform-origin:32px 32px;animation:spin 14s linear infinite}
+.fl{animation:bob 4s ease-in-out infinite}
+.drop{animation:fall 1s linear infinite}.d2{animation-delay:.3s}.d3{animation-delay:.6s}
+.bolt{animation:flash 2s infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bob{50%{transform:translateY(-6px)}}
+@keyframes fall{0%{transform:translateY(-4px);opacity:0}30%{opacity:1}100%{transform:translateY(10px);opacity:0}}
+@keyframes flash{0%,80%,100%{opacity:1}85%{opacity:.2}90%{opacity:1}}
+@keyframes pop{from{transform:scale(.94);opacity:0}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+
+<div id="login" class="hide">
+  <div class="lbox">
+    <div class="logo"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg></div>
+    <h1 id="ltitle">FamilyDash</h1>
+    <p id="lsub"></p>
+    <input id="lu" placeholder="Benutzername" autocomplete="username">
+    <input id="lp" type="password" placeholder="Passwort" autocomplete="current-password">
+    <input id="lp2" type="password" placeholder="Passwort wiederholen" class="hide" autocomplete="new-password">
+    <button id="lbtn" class="btn full">Weiter</button>
+    <div class="err" id="lerr"></div>
+  </div>
+</div>
+
+<div id="app" class="hide">
+  <header>
+    <div><h1 id="hello">Hallo</h1><small id="clock"></small></div>
+    <button class="iconbtn" id="setbtn" title="Einstellungen">⚙️</button>
+  </header>
+  <main class="grid">
+    <section class="card">
+      <h2><i style="background:#8b7bff33"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b7bff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></i>Todo</h2>
+      <div class="add"><input id="todoIn" placeholder="Neue Aufgabe …"><button class="btn" id="todoAdd">+</button></div>
+      <div id="todos"></div>
+    </section>
+
+    <section class="card">
+      <h2><i style="background:#ffc94a33"><svg width="24" height="24" viewBox="0 0 64 64"><use href="#sunI"/></svg></i>Wetter <span class="sub" id="city"></span></h2>
+      <div id="weather"><div class="empty">Lade …</div></div>
+    </section>
+
+    <section class="card">
+      <h2><i style="background:#3ee0b533"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3ee0b5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 16V7h11v9M12 10h5l3 3v3h-2"/><circle cx="6" cy="18" r="2"/><circle cx="16" cy="18" r="2"/></svg></i>Müllabfuhr</h2>
+      <div class="trow">
+        <select id="tType"><option>Restmüll</option><option>Bio</option><option>Gelber Sack</option><option>Papier</option></select>
+        <input id="tDate" type="date">
+        <select id="tEvery"><option value="0">einmalig</option><option value="7">jede Woche</option><option value="14">alle 2 Wochen</option><option value="28">alle 4 Wochen</option></select>
+      </div>
+      <button class="btn full" id="tAdd" style="margin-bottom:12px">Termin hinzufügen</button>
+      <div id="trash"></div>
+    </section>
+
+    <section class="card">
+      <h2><i style="background:#ff7a8a33"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff7a8a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="4"/><path d="M8 3v4M16 3v4M3 11h18"/></svg></i>Kalender <span class="sub" id="calState"></span></h2>
+      <div id="events"><div class="empty">Kalender-Link in den Einstellungen hinterlegen.</div></div>
+    </section>
+  </main>
+</div>
+
+<dialog id="dlg">
+  <h2 style="margin-bottom:8px">Einstellungen</h2>
+  <label>Stadt für das Wetter</label><input id="sCity" placeholder="z. B. München">
+  <label>Google Kalender (geheime Adresse im iCal-Format)</label><input id="sGoogle" placeholder="https://calendar.google.com/…basic.ics">
+  <label>Apple / iCloud Kalender (öffentlicher Link, webcal://…)</label><input id="sApple" placeholder="webcal://…">
+  <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="sSave" style="flex:1">Speichern</button><button class="btn" id="sOut" style="background:var(--card2)">Abmelden</button></div>
+  <div class="err" id="sErr"></div>
+</dialog>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+<g id="sunI"><g class="spin"><circle cx="32" cy="32" r="11" fill="#ffc94a"/><g stroke="#ffc94a" stroke-width="4" stroke-linecap="round"><path d="M32 6v7M32 51v7M6 32h7M51 32h7M13.6 13.6l5 5M45.4 45.4l5 5M13.6 50.4l5-5M45.4 18.6l5-5"/></g></g></g>
+</defs></svg>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, set, get, push, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAGetmmABHrPAT5LooxvEeGI6JgL-h4r7o",
+  authDomain: "familydash-8f588.firebaseapp.com",
+  databaseURL: "https://familydash-8f588-default-rtdb.firebaseio.com",
+  projectId: "familydash-8f588",
+  storageBucket: "familydash-8f588.firebasestorage.app",
+  messagingSenderId: "798862593820",
+  appId: "1:798862593820:web:f0ad8bdbcf4470642d74d9"
+});
+const db = getDatabase(app);
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CHECK = '<svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>';
+
+/* ---------- Passwort-Hash ---------- */
+async function hash(s) {
+  if (crypto.subtle) {
+    const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+    return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+  }
+  let h = 5381; for (const c of s) h = ((h << 5) + h + c.charCodeAt(0)) >>> 0; return 'x' + h;
+}
+
+/* ---------- Login / Ersteinrichtung ---------- */
+let authData = null, mode = 'login', started = false;
+async function boot() {
+  try { authData = (await get(ref(db, 'auth'))).val(); }
+  catch (e) { showLogin('error'); $('lerr').textContent = 'Keine Verbindung zur Datenbank (Regeln prüfen).'; return; }
+  const s = JSON.parse(localStorage.getItem('fd_session') || 'null');
+  if (authData && s && s.u === authData.user && s.h === authData.hash) return start(authData.user);
+  showLogin(authData ? 'login' : 'setup');
+}
+function showLogin(m) {
+  mode = m; $('login').classList.remove('hide'); $('app').classList.add('hide');
+  const setup = m === 'setup';
+  $('ltitle').textContent = setup ? 'Willkommen!' : 'FamilyDash';
+  $('lsub').textContent = setup ? 'Lege Benutzername und Passwort für euer Dashboard fest.' : 'Melde dich an.';
+  $('lp2').classList.toggle('hide', !setup);
+  $('lbtn').textContent = setup ? 'Dashboard anlegen' : 'Anmelden';
+}
+$('lbtn').onclick = async () => {
+  const u = $('lu').value.trim(), p = $('lp').value; $('lerr').textContent = '';
+  if (!u || p.length < 4) return $('lerr').textContent = 'Name und Passwort (mind. 4 Zeichen) eingeben.';
+  if (mode === 'setup') {
+    if (p !== $('lp2').value) return $('lerr').textContent = 'Die Passwörter stimmen nicht überein.';
+    const salt = Math.random().toString(36).slice(2);
+    authData = { user: u, salt, hash: await hash(salt + p) };
+    await set(ref(db, 'auth'), authData);
+  } else {
+    if (u !== authData.user || await hash(authData.salt + p) !== authData.hash) return $('lerr').textContent = 'Benutzername oder Passwort stimmt nicht.';
+  }
+  localStorage.setItem('fd_session', JSON.stringify({ u: authData.user, h: authData.hash }));
+  start(authData.user);
+};
+[$('lu'), $('lp'), $('lp2')].forEach(i => i.addEventListener('keydown', e => e.key === 'Enter' && $('lbtn').click()));
+$('sOut').onclick = () => { localStorage.removeItem('fd_session'); location.reload(); };
+
+/* ---------- App ---------- */
+let settings = {};
+function start(user) {
+  $('login').classList.add('hide'); $('app').classList.remove('hide');
+  if (started) return; started = true;
+  const h = new Date().getHours();
+  $('hello').textContent = (h < 11 ? 'Guten Morgen' : h < 18 ? 'Hallo' : 'Guten Abend') + ', ' + user;
+  const tick = () => $('clock').textContent = new Date().toLocaleString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+  tick(); setInterval(tick, 30000);
+  $('tDate').valueAsDate = new Date();
+
+  onValue(ref(db, 'todos'), s => renderTodos(s.val() || {}));
+  onValue(ref(db, 'trash'), s => renderTrash(s.val() || {}));
+  onValue(ref(db, 'settings'), s => { settings = s.val() || {}; loadWeather(); loadCalendars(); });
+  setInterval(loadWeather, 600000); setInterval(loadCalendars, 300000);
+}
+
+/* Todos */
+function renderTodos(d) {
+  const items = Object.entries(d).sort((a, b) => (a[1].done - b[1].done) || (a[1].ts - b[1].ts));
+  $('todos').innerHTML = items.length ? items.map(([k, v]) => `<div class="row ${v.done ? 'done' : ''}"><button class="chk" data-todo="${k}">${CHECK}</button><span class="t">${esc(v.text)}</span><button class="x" data-deltodo="${k}">✕</button></div>`).join('') : '<div class="empty">Alles erledigt 🎉</div>';
+}
+const addTodo = () => { const t = $('todoIn').value.trim(); if (!t) return; push(ref(db, 'todos'), { text: t, done: false, ts: Date.now() }); $('todoIn').value = ''; };
+$('todoAdd').onclick = addTodo; $('todoIn').addEventListener('keydown', e => e.key === 'Enter' && addTodo());
+
+/* Müll */
+const COL = { 'Restmüll': '#9aa0c9', 'Bio': '#3ee0b5', 'Gelber Sack': '#ffc94a', 'Papier': '#6ea8ff' };
+let trashData = {};
+function renderTrash(d) {
+  trashData = d;
+  const items = Object.entries(d).sort((a, b) => (a[1].done - b[1].done) || a[1].date.localeCompare(b[1].date));
+  const today = new Date(new Date().toDateString());
+  $('trash').innerHTML = items.length ? items.map(([k, v]) => {
+    const n = Math.round((new Date(v.date + 'T00:00') - today) / 864e5);
+    const when = n === 0 ? 'Heute' : n === 1 ? 'Morgen' : n < 0 ? `vor ${-n} Tg.` : `in ${n} Tagen`;
+    const dt = new Date(v.date + 'T00:00').toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' });
+    return `<div class="row ${v.done ? 'done' : ''}" style="--c:${COL[v.type] || '#8b7bff'}"><button class="chk" data-trash="${k}">${CHECK}</button><span class="t">${esc(v.type)}<br><span class="sub">${dt} · ${when}${v.every > 0 ? ' · wiederkehrend' : ''}</span></span><button class="x" data-deltrash="${k}">✕</button></div>`;
+  }).join('') : '<div class="empty">Noch kein Termin eingetragen.</div>';
+}
+$('tAdd').onclick = () => { const date = $('tDate').value; if (!date) return; push(ref(db, 'trash'), { type: $('tType').value, date, every: +$('tEvery').value, done: false }); };
+const addDays = (s, n) => { const d = new Date(s + 'T00:00'); d.setDate(d.getDate() + n); return d.toLocaleDateString('sv-SE'); };
+
+/* Klicks */
+document.addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const D = b.dataset;
+  if (D.todo) update(ref(db, 'todos/' + D.todo), { done: !b.closest('.row').classList.contains('done') });
+  if (D.deltodo) remove(ref(db, 'todos/' + D.deltodo));
+  if (D.deltrash) remove(ref(db, 'trash/' + D.deltrash));
+  if (D.trash) {
+    const v = trashData[D.trash], nowDone = !v.done;
+    await update(ref(db, 'trash/' + D.trash), { done: nowDone });
+    if (nowDone && v.every > 0 && !v.next) {
+      await update(ref(db, 'trash/' + D.trash), { next: true });
+      push(ref(db, 'trash'), { type: v.type, date: addDays(v.date, v.every), every: v.every, done: false });
+    }
+  }
+});
+
+/* Wetter (Open-Meteo, kein Key nötig) */
+const cloud = '<path class="fl" d="M20 46a10 10 0 010-20 14 14 0 0126-3 11 11 0 011 23z" fill="#dfe3ff"/>';
+const drops = '<g stroke="#6ea8ff" stroke-width="3.5" stroke-linecap="round"><path class="drop" d="M24 52v4"/><path class="drop d2" d="M34 52v4"/><path class="drop d3" d="M44 52v4"/></g>';
+const snow = '<g fill="#fff"><circle class="drop" cx="24" cy="54" r="2.5"/><circle class="drop d2" cx="34" cy="54" r="2.5"/><circle class="drop d3" cx="44" cy="54" r="2.5"/></g>';
+function wIcon(c, day = 1) {
+  let g;
+  const sunOrMoon = day ? '<use href="#sunI"/>' : '<path class="fl" d="M40 12a20 20 0 100 40 16 16 0 01-14-27 16 16 0 0114-13z" transform="translate(-4 4)" fill="#ffe9a8"/>';
+  if (c <= 1) g = sunOrMoon;
+  else if (c === 2) g = `<g transform="translate(-8 -8) scale(.75)">${sunOrMoon}</g><g transform="translate(6 6) scale(.85)">${cloud}</g>`;
+  else if (c === 3 || c === 45 || c === 48) g = cloud;
+  else if ((c >= 71 && c <= 77) || c === 85 || c === 86) g = cloud + snow;
+  else if (c >= 95) g = cloud + drops + '<path class="bolt" d="M36 40l-7 12h6l-3 9 10-14h-6z" fill="#ffc94a"/>';
+  else g = cloud + drops;
+  return `<svg viewBox="0 0 64 64">${g}</svg>`;
+}
+const WTXT = c => c <= 1 ? 'Klar' : c === 2 ? 'Heiter' : c === 3 ? 'Bewölkt' : c < 50 ? 'Nebel' : c < 68 ? 'Regen' : c < 78 ? 'Schnee' : c < 90 ? 'Schauer' : 'Gewitter';
+async function loadWeather() {
+  const city = settings.city || 'München';
+  try {
+    if (!settings.geo || settings.geo.name !== city) {
+      const g = await (await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=de`)).json();
+      if (!g.results) { $('weather').innerHTML = '<div class="empty">Stadt nicht gefunden.</div>'; return; }
+      const r = g.results[0]; settings.geo = { name: city, lat: r.latitude, lon: r.longitude };
+      set(ref(db, 'settings/geo'), settings.geo);
+    }
+    const { lat, lon } = settings.geo;
+    const w = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`)).json();
+    const c = w.current, d = w.daily;
+    $('city').textContent = city;
+    $('weather').innerHTML = `<div class="now">${wIcon(c.weather_code, c.is_day)}<div><div class="temp">${Math.round(c.temperature_2m)}°</div><div class="sub">${WTXT(c.weather_code)} · gefühlt ${Math.round(c.apparent_temperature)}° · Wind ${Math.round(c.wind_speed_10m)} km/h</div></div></div>
+    <div class="days">${d.time.slice(1, 6).map((t, i) => `<div class="day">${new Date(t).toLocaleDateString('de-DE', { weekday: 'short' })}${wIcon(d.weather_code[i + 1])}<div>${Math.round(d.temperature_2m_max[i + 1])}° <span class="sub">${Math.round(d.temperature_2m_min[i + 1])}°</span></div><div class="sub">💧${d.precipitation_probability_max[i + 1] ?? 0}%</div></div>`).join('')}</div>`;
+  } catch (e) { $('weather').innerHTML = '<div class="empty">Wetter gerade nicht erreichbar.</div>'; }
+}
+
+/* Kalender: iCal-Abos (Google & Apple) */
+function parseICS(txt, src, color) {
+  txt = txt.replace(/\r?\n[ \t]/g, '');
+  const out = [], now = new Date(), end = new Date(now.getTime() + 21 * 864e5), start = new Date(now.toDateString());
+  for (const blk of txt.split('BEGIN:VEVENT').slice(1)) {
+    const m = k => { const r = blk.match(new RegExp('^' + k + '([^:\\n]*):(.*)$', 'm')); return r ? r[2].trim() : null; };
+    const ds = m('DTSTART'); if (!ds) continue;
+    const p = ds.match(/(\d{4})(\d\d)(\d\d)(?:T(\d\d)(\d\d))?(Z)?/); if (!p) continue;
+    const allDay = !p[4];
+    const dt = p[6] ? new Date(Date.UTC(p[1], p[2] - 1, p[3], p[4], p[5])) : new Date(p[1], p[2] - 1, p[3], p[4] || 0, p[5] || 0);
+    if (dt >= start && dt <= end) out.push({ dt, allDay, title: (m('SUMMARY') || 'Termin').replace(/\\,/g, ',').replace(/\\n/g, ' '), src, color });
+  }
+  return out;
+}
+async function loadCalendars() {
+  const srcs = [['Google', settings.google, '#8b7bff'], ['Apple', settings.apple, '#ff7a8a']].filter(s => s[1]);
+  if (!srcs.length) { $('events').innerHTML = '<div class="empty">Kalender-Link in den Einstellungen hinterlegen.</div>'; $('calState').textContent = ''; return; }
+  let all = [], fail = 0;
+  await Promise.all(srcs.map(async ([n, u, c]) => {
+    try {
+      const url = u.replace(/^webcal:/i, 'https:');
+      const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+      all = all.concat(parseICS(await r.text(), n, c));
+    } catch (e) { fail++; }
+  }));
+  all.sort((a, b) => a.dt - b.dt);
+  $('calState').textContent = fail ? '⚠︎ teils offline' : '● live';
+  $('events').innerHTML = all.length ? all.slice(0, 12).map(e => `<div class="row ev" style="--c:${e.color}"><span class="t">${esc(e.title)}<br><span class="sub">${e.dt.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}${e.allDay ? ' · ganztägig' : ' · ' + e.dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} · ${e.src}</span></span></div>`).join('') : '<div class="empty">Keine Termine in den nächsten 3 Wochen.</div>';
+}
+
+/* Einstellungen */
+$('setbtn').onclick = () => { $('sCity').value = settings.city || ''; $('sGoogle').value = settings.google || ''; $('sApple').value = settings.apple || ''; $('dlg').showModal(); };
+$('sSave').onclick = async () => {
+  const city = $('sCity').value.trim();
+  await update(ref(db, 'settings'), { city, google: $('sGoogle').value.trim(), apple: $('sApple').value.trim() });
+  $('dlg').close();
+};
+$('dlg').addEventListener('click', e => { if (e.target === $('dlg')) $('dlg').close(); });
+
+boot();
+</script>
+</body>
+</html>
