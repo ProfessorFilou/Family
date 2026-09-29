@@ -86,6 +86,37 @@ header h1{font-size:32px;letter-spacing:-.5px}
 .now svg{width:104px;height:104px;filter:drop-shadow(0 8px 18px #0006)}
 .day{transition:transform .2s;border:1px solid #ffffff0d}
 .day:hover{transform:translateY(-4px)}
+/* v3 Layout: ein Bildschirm */
+@media(min-width:900px){
+ body{height:100dvh;display:flex;flex-direction:column;overflow:hidden;padding-bottom:16px}
+ #app{flex:1;min-height:0;display:flex;flex-direction:column;width:100%;max-width:1600px;margin:auto}
+ header{width:100%;margin:0 0 12px}
+ header h1{font-size:26px}
+ .grid{flex:1;min-height:0;max-width:none;width:100%;grid-template-columns:1fr 1.3fr 1fr;grid-template-rows:1fr 1fr;gap:16px}
+ main .card:nth-child(1){grid-column:1;grid-row:1/3}
+ main .card:nth-child(2){grid-column:2;grid-row:1/3}
+ main .card:nth-child(3){grid-column:3;grid-row:1}
+ main .card:nth-child(4){grid-column:3;grid-row:2}
+ .card{overflow-y:auto;min-height:0}
+}
+.card{scrollbar-width:thin;scrollbar-color:#ffffff30 transparent;background:radial-gradient(420px 240px at 85% 0,var(--wg,transparent),transparent),linear-gradient(160deg,#2b3164c8,#1f2447b8)}
+#fx{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+.ev{animation:none}
+.tw{animation:tw 2.4s ease-in-out infinite}
+@keyframes tw{50%{opacity:.25}}
+.hero{display:flex;align-items:center;gap:14px}
+.hero svg{width:120px;height:120px;flex:none;filter:drop-shadow(0 10px 22px #0007)}
+.hero .temp{font-size:76px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.chip{background:#ffffff14;border-radius:16px;padding:7px 12px;font-size:13px;font-weight:700}
+.hours{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;scrollbar-width:none}
+.hr{flex:none;width:60px;background:#ffffff12;border-radius:20px;padding:8px 0;text-align:center;font-size:12px;font-weight:700}
+.hr svg{width:34px;height:34px}
+.drow{display:grid;grid-template-columns:52px 34px 30px 1fr 34px;align-items:center;gap:10px;font-size:14px;font-weight:700;padding:4px 0}
+.drow svg{width:34px;height:34px}
+.bar{height:8px;border-radius:8px;background:#ffffff18;position:relative}
+.bar i{position:absolute;top:0;bottom:0;border-radius:8px;background:linear-gradient(90deg,#6ea8ff,#ffc94a)}
+#sGeo{background:var(--card2);box-shadow:none;margin-bottom:8px}
 /* dialog */
 dialog{border:0;border-radius:30px;background:var(--card);color:var(--txt);padding:24px;width:min(440px,92vw)}
 dialog::backdrop{background:#000a}dialog label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:6px 0 4px}
@@ -104,7 +135,7 @@ dialog::backdrop{background:#000a}dialog label{font-size:13px;color:var(--mut);f
 </head>
 <body>
 
-<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><canvas id="fx"></canvas>
 <div id="login" class="hide">
   <div class="lbox">
     <div class="logo"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg></div>
@@ -156,7 +187,7 @@ dialog::backdrop{background:#000a}dialog label{font-size:13px;color:var(--mut);f
 
 <dialog id="dlg">
   <h2 style="margin-bottom:8px">Einstellungen</h2>
-  <label>Stadt für das Wetter</label><input id="sCity" placeholder="z. B. München">
+  <label>Wetter-Standort</label><input id="sCity" placeholder="z. B. München"><button class="btn full" id="sGeo" type="button">📍 Meinen aktuellen Standort verwenden</button>
   <label>Google Kalender (geheime Adresse im iCal-Format)</label><input id="sGoogle" placeholder="https://calendar.google.com/…basic.ics">
   <label>Apple / iCloud Kalender (öffentlicher Link, webcal://…)</label><input id="sApple" placeholder="webcal://…">
   <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="sSave" style="flex:1">Speichern</button><button class="btn" id="sOut" style="background:var(--card2)">Abmelden</button></div>
@@ -165,6 +196,7 @@ dialog::backdrop{background:#000a}dialog label{font-size:13px;color:var(--mut);f
 
 <svg width="0" height="0" style="position:absolute"><defs>
 <g id="sunI"><g class="spin"><circle cx="32" cy="32" r="11" fill="#ffc94a"/><g stroke="#ffc94a" stroke-width="4" stroke-linecap="round"><path d="M32 6v7M32 51v7M6 32h7M51 32h7M13.6 13.6l5 5M45.4 45.4l5 5M13.6 50.4l5-5M45.4 18.6l5-5"/></g></g></g>
+<mask id="moonM" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><rect width="64" height="64" fill="#fff"/><circle cx="41" cy="26" r="16" fill="#000"/></mask>
 </defs></svg>
 
 <script type="module">
@@ -233,16 +265,22 @@ let settings = {};
 function start(user) {
   $('login').classList.add('hide'); $('app').classList.remove('hide');
   if (started) return; started = true;
-  const h = new Date().getHours();
-  $('hello').textContent = (h < 11 ? 'Guten Morgen' : h < 18 ? 'Hallo' : 'Guten Abend') + ', ' + user;
-  const tick = () => $('clock').textContent = new Date().toLocaleString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
-  tick(); setInterval(tick, 30000);
+  let lastDay = '';
+  const tick = () => {
+    const h = new Date().getHours();
+    $('hello').textContent = (h < 11 ? 'Guten Morgen' : h < 18 ? 'Hallo' : 'Guten Abend') + ', ' + user;
+    $('clock').textContent = new Date().toLocaleString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+    const ds = new Date().toDateString();
+    if (ds !== lastDay) { lastDay = ds; renderTrash(trashData); }
+  };
+  tick(); setInterval(tick, 20000);
   $('tDate').valueAsDate = new Date();
 
   onValue(ref(db, 'todos'), s => renderTodos(s.val() || {}));
   onValue(ref(db, 'trash'), s => renderTrash(s.val() || {}));
   onValue(ref(db, 'settings'), s => { settings = s.val() || {}; loadWeather(); loadCalendars(); });
-  setInterval(loadWeather, 600000); setInterval(loadCalendars, 300000);
+  setInterval(loadWeather, 300000); setInterval(loadCalendars, 120000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadWeather(); loadCalendars(); } });
 }
 
 /* Todos */
@@ -296,7 +334,7 @@ const drops = '<g stroke="#6ea8ff" stroke-width="3.5" stroke-linecap="round"><pa
 const snow = '<g fill="#fff"><circle class="drop" cx="24" cy="54" r="2.5"/><circle class="drop d2" cx="34" cy="54" r="2.5"/><circle class="drop d3" cx="44" cy="54" r="2.5"/></g>';
 function wIcon(c, day = 1) {
   let g;
-  const sunOrMoon = day ? '<use href="#sunI"/>' : '<path class="fl" d="M40 12a20 20 0 100 40 16 16 0 01-14-27 16 16 0 0114-13z" transform="translate(-4 4)" fill="#ffe9a8"/>';
+  const sunOrMoon = day ? '<use href="#sunI"/>' : '<g class="fl"><circle cx="30" cy="34" r="19" mask="url(#moonM)" fill="#ffe9a8"/><g fill="#fff" class="tw"><circle cx="50" cy="16" r="1.8"/><circle cx="56" cy="30" r="1.3"/><circle cx="44" cy="8" r="1.1"/></g></g>';
   if (c <= 1) g = sunOrMoon;
   else if (c === 2) g = `<g transform="translate(-8 -8) scale(.75)">${sunOrMoon}</g><g transform="translate(6 6) scale(.85)">${cloud}</g>`;
   else if (c === 3 || c === 45 || c === 48) g = cloud;
@@ -306,6 +344,36 @@ function wIcon(c, day = 1) {
   return `<svg viewBox="0 0 64 64">${g}</svg>`;
 }
 const WTXT = c => c <= 1 ? 'Klar' : c === 2 ? 'Heiter' : c === 3 ? 'Bewölkt' : c < 50 ? 'Nebel' : c < 68 ? 'Regen' : c < 78 ? 'Schnee' : c < 90 ? 'Schauer' : 'Gewitter';
+/* Partikel hinter den Cards */
+const cv = $('fx'), cx = cv.getContext('2d'); let P = [], fxKind = '', W = 0, H = 0;
+const rs = () => { W = cv.width = innerWidth; H = cv.height = innerHeight; }; addEventListener('resize', rs); rs();
+const mk = () => ({ x: Math.random() * W, y: Math.random() * H, z: Math.random(), t: Math.random() * 6.28 });
+function setFx(k) { if (k === fxKind) return; fxKind = k; P = Array.from({ length: { rain: 170, snow: 120, stars: 100, dust: 50, fog: 12 }[k] || 0 }, mk); }
+function loop() {
+  cx.clearRect(0, 0, W, H);
+  for (const p of P) {
+    if (fxKind === 'rain') {
+      cx.strokeStyle = `rgba(150,190,255,${.25 + p.z * .4})`; cx.lineWidth = 1 + p.z; cx.beginPath(); cx.moveTo(p.x, p.y); cx.lineTo(p.x - 2, p.y + 10 + p.z * 14); cx.stroke();
+      p.y += 9 + p.z * 12; p.x -= 1; if (p.y > H) { p.y = -20; p.x = Math.random() * W; }
+    } else if (fxKind === 'snow') {
+      p.t += .02; p.x += Math.sin(p.t) * .5; p.y += .6 + p.z * 1.4; cx.fillStyle = `rgba(255,255,255,${.4 + p.z * .5})`;
+      cx.beginPath(); cx.arc(p.x, p.y, 1.5 + p.z * 2.5, 0, 6.3); cx.fill(); if (p.y > H) { p.y = -5; p.x = Math.random() * W; }
+    } else if (fxKind === 'stars') {
+      p.t += .03; cx.fillStyle = `rgba(255,245,210,${.25 + .65 * Math.abs(Math.sin(p.t))})`;
+      cx.beginPath(); cx.arc(p.x, p.y, .6 + p.z * 1.5, 0, 6.3); cx.fill();
+    } else if (fxKind === 'dust') {
+      p.t += .01; p.x += Math.sin(p.t) * .3; p.y -= .2 + p.z * .3; cx.fillStyle = `rgba(255,210,110,${.2 + p.z * .3})`;
+      cx.beginPath(); cx.arc(p.x, p.y, 1 + p.z * 2.5, 0, 6.3); cx.fill(); if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; }
+    } else if (fxKind === 'fog') {
+      const r = 130 + p.z * 150; p.x += .15 + p.z * .25; if (p.x > W + r) p.x = -r;
+      const g = cx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r); g.addColorStop(0, 'rgba(190,200,255,.13)'); g.addColorStop(1, 'rgba(190,200,255,0)');
+      cx.fillStyle = g; cx.fillRect(p.x - r, p.y - r, r * 2, r * 2);
+    }
+  }
+  requestAnimationFrame(loop);
+}
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) loop();
+
 async function loadWeather() {
   const city = settings.city || 'München';
   try {
@@ -316,12 +384,21 @@ async function loadWeather() {
       set(ref(db, 'settings/geo'), settings.geo);
     }
     const { lat, lon } = settings.geo;
-    const w = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`)).json();
-    const c = w.current, d = w.daily;
-    $('weather').closest('.card').style.setProperty('--wg', !c.is_day ? '#5a4aff44' : c.weather_code <= 2 ? '#ffb84a44' : c.weather_code >= 51 ? '#4a7bff44' : '#9aa0c944');
+    const w = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,weather_code,is_day,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&forecast_days=6&timezone=auto`)).json();
+    const c = w.current, d = w.daily, hh = w.hourly, code = c.weather_code;
+    $('weather').closest('.card').style.setProperty('--wg', !c.is_day ? '#5a4aff55' : code <= 2 ? '#ffb84a55' : code >= 51 ? '#4a7bff55' : '#9aa0c955');
+    const i0 = Math.max(0, hh.time.findIndex(t => t >= c.time.slice(0, 13) + ':00'));
+    const hours = hh.time.slice(i0, i0 + 12).map((t, k) => `<div class="hr">${k ? t.slice(11, 13) + ' Uhr' : 'Jetzt'}${wIcon(hh.weather_code[i0 + k], hh.is_day[i0 + k])}<div>${Math.round(hh.temperature_2m[i0 + k])}°</div></div>`).join('');
+    const lo = Math.min(...d.temperature_2m_min.slice(0, 5)), hi = Math.max(...d.temperature_2m_max.slice(0, 5));
+    const days = d.time.slice(0, 5).map((t, i) => {
+      const a = d.temperature_2m_min[i], b = d.temperature_2m_max[i], L = (a - lo) / (hi - lo || 1) * 100, R = (b - lo) / (hi - lo || 1) * 100;
+      return `<div class="drow"><span>${i ? new Date(t + 'T00:00').toLocaleDateString('de-DE', { weekday: 'short' }) : 'Heute'}</span>${wIcon(d.weather_code[i])}<span class="sub">${Math.round(a)}°</span><div class="bar"><i style="left:${L}%;right:${100 - R}%"></i></div><span>${Math.round(b)}°</span></div>`;
+    }).join('');
     $('city').textContent = city;
-    $('weather').innerHTML = `<div class="now">${wIcon(c.weather_code, c.is_day)}<div><div class="temp">${Math.round(c.temperature_2m)}°</div><div class="sub">${WTXT(c.weather_code)} · gefühlt ${Math.round(c.apparent_temperature)}° · Wind ${Math.round(c.wind_speed_10m)} km/h</div></div></div>
-    <div class="days">${d.time.slice(1, 6).map((t, i) => `<div class="day">${new Date(t).toLocaleDateString('de-DE', { weekday: 'short' })}${wIcon(d.weather_code[i + 1])}<div>${Math.round(d.temperature_2m_max[i + 1])}° <span class="sub">${Math.round(d.temperature_2m_min[i + 1])}°</span></div><div class="sub">💧${d.precipitation_probability_max[i + 1] ?? 0}%</div></div>`).join('')}</div>`;
+    $('weather').innerHTML = `<div class="hero">${wIcon(code, c.is_day)}<div><div class="temp">${Math.round(c.temperature_2m)}°</div><div style="font-weight:900;font-size:18px">${WTXT(code)}</div><div class="sub">gefühlt ${Math.round(c.apparent_temperature)}°</div></div></div>
+    <div class="chips"><span class="chip">💨 ${Math.round(c.wind_speed_10m)} km/h</span><span class="chip">💧 ${c.relative_humidity_2m}%</span><span class="chip">☔ ${d.precipitation_probability_max[0] ?? 0}%</span><span class="chip">🌅 ${d.sunrise[0].slice(11, 16)}</span><span class="chip">🌇 ${d.sunset[0].slice(11, 16)}</span></div>
+    <div class="hours">${hours}</div>${days}`;
+    setFx((code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95 ? 'rain' : (code >= 71 && code <= 77) || code === 85 || code === 86 ? 'snow' : code === 3 || code === 45 || code === 48 ? 'fog' : !c.is_day ? 'stars' : 'dust');
   } catch (e) { $('weather').innerHTML = '<div class="empty">Wetter gerade nicht erreichbar.</div>'; }
 }
 
@@ -361,6 +438,13 @@ $('sSave').onclick = async () => {
   const city = $('sCity').value.trim();
   await update(ref(db, 'settings'), { city, google: $('sGoogle').value.trim(), apple: $('sApple').value.trim() });
   $('dlg').close();
+};
+$('sGeo').onclick = () => {
+  $('sErr').textContent = 'Suche Standort …';
+  navigator.geolocation.getCurrentPosition(async p => {
+    await update(ref(db, 'settings'), { city: 'Mein Standort', geo: { name: 'Mein Standort', lat: p.coords.latitude, lon: p.coords.longitude } });
+    $('sErr').textContent = ''; $('dlg').close();
+  }, () => $('sErr').textContent = 'Standort nicht verfügbar – Zugriff im Browser erlauben.');
 };
 $('dlg').addEventListener('click', e => { if (e.target === $('dlg')) $('dlg').close(); });
 
