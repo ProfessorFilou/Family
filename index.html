@@ -53,6 +53,39 @@ header h1{font-size:26px;font-weight:900}header small{color:var(--mut);font-weig
 .day{background:var(--card2);border-radius:20px;padding:10px 4px;text-align:center;font-size:13px;font-weight:700}
 .day svg{width:40px;height:40px}
 .ev{border-left:5px solid var(--c);}
+/* v2 Look */
+body{background:var(--bg);overflow-x:hidden}
+.blob{position:fixed;border-radius:50%;filter:blur(90px);opacity:.4;z-index:-1;animation:drift 24s ease-in-out infinite alternate}
+.b1{width:480px;height:480px;background:var(--violet);top:-160px;left:-120px}
+.b2{width:420px;height:420px;background:var(--mint);bottom:-160px;right:-100px;animation-delay:-8s;opacity:.28}
+.b3{width:320px;height:320px;background:var(--coral);top:40%;left:55%;animation-delay:-14s;opacity:.2}
+@keyframes drift{to{transform:translate(60px,50px) scale(1.15)}}
+.card{background:radial-gradient(420px 240px at 85% 0,var(--wg,transparent),transparent),linear-gradient(160deg,#2b3164e6,#1f2447e6);backdrop-filter:blur(14px);border:1px solid #ffffff18;box-shadow:0 18px 44px #0005;padding:22px;transition:transform .3s,box-shadow .3s;animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+.card:hover{transform:translateY(-4px);box-shadow:0 26px 54px #0006}
+.card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--acc)}
+main .card:nth-child(1){--acc:var(--violet)}
+main .card:nth-child(2){--acc:var(--sun);animation-delay:.09s}
+main .card:nth-child(3){--acc:var(--mint);animation-delay:.18s}
+main .card:nth-child(4){--acc:var(--coral);animation-delay:.27s}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}}
+.card h2 i{box-shadow:inset 0 0 0 1px #ffffff14}
+.btn{background:linear-gradient(135deg,var(--violet),#5f8bff);box-shadow:0 8px 20px #8b7bff55}
+.lbox{background:linear-gradient(160deg,#2b3164,#1f2447);border:1px solid #ffffff18}
+header h1{font-size:32px;letter-spacing:-.5px}
+#clock{display:inline-block;margin-top:4px;background:#ffffff12;border-radius:20px;padding:4px 12px}
+.iconbtn{transition:transform .4s,background .2s;border:1px solid #ffffff18}
+.iconbtn:hover{transform:rotate(70deg);background:var(--card2)}
+.row{transition:background .2s,transform .2s;border:1px solid #ffffff0d}
+.row:hover{background:#363d78;transform:translateX(3px)}
+.done .chk{animation:tick .35s}
+@keyframes tick{50%{transform:scale(1.35)}}
+.prog{height:8px;border-radius:8px;background:var(--card2);margin-bottom:6px;overflow:hidden}
+.prog div{height:100%;width:0;border-radius:8px;background:linear-gradient(90deg,var(--violet),var(--mint));transition:width .6s cubic-bezier(.3,1.4,.5,1)}
+#progTxt{margin-bottom:12px;min-height:16px}
+.temp{font-size:68px;letter-spacing:-2px}
+.now svg{width:104px;height:104px;filter:drop-shadow(0 8px 18px #0006)}
+.day{transition:transform .2s;border:1px solid #ffffff0d}
+.day:hover{transform:translateY(-4px)}
 /* dialog */
 dialog{border:0;border-radius:30px;background:var(--card);color:var(--txt);padding:24px;width:min(440px,92vw)}
 dialog::backdrop{background:#000a}dialog label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:6px 0 4px}
@@ -71,6 +104,7 @@ dialog::backdrop{background:#000a}dialog label{font-size:13px;color:var(--mut);f
 </head>
 <body>
 
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
 <div id="login" class="hide">
   <div class="lbox">
     <div class="logo"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg></div>
@@ -92,6 +126,7 @@ dialog::backdrop{background:#000a}dialog label{font-size:13px;color:var(--mut);f
   <main class="grid">
     <section class="card">
       <h2><i style="background:#8b7bff33"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b7bff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></i>Todo</h2>
+      <div class="prog"><div id="progBar"></div></div><div class="sub" id="progTxt"></div>
       <div class="add"><input id="todoIn" placeholder="Neue Aufgabe …"><button class="btn" id="todoAdd">+</button></div>
       <div id="todos"></div>
     </section>
@@ -163,7 +198,7 @@ async function hash(s) {
 let authData = null, mode = 'login', started = false;
 async function boot() {
   try { authData = (await get(ref(db, 'auth'))).val(); }
-  catch (e) { showLogin('error'); $('lerr').textContent = 'Keine Verbindung zur Datenbank (Regeln prüfen).'; return; }
+  catch (e) { showLogin('error'); $('lerr').textContent = 'Keine Verbindung zur Datenbank: ' + (e.message || e.code || e) + ' – In der Firebase Console unter Realtime Database → Regeln Lesen/Schreiben freigeben.'; console.error(e); return; }
   const s = JSON.parse(localStorage.getItem('fd_session') || 'null');
   if (authData && s && s.u === authData.user && s.h === authData.hash) return start(authData.user);
   showLogin(authData ? 'login' : 'setup');
@@ -213,6 +248,9 @@ function start(user) {
 /* Todos */
 function renderTodos(d) {
   const items = Object.entries(d).sort((a, b) => (a[1].done - b[1].done) || (a[1].ts - b[1].ts));
+  const dn = items.filter(i => i[1].done).length;
+  $('progBar').style.width = (items.length ? dn / items.length * 100 : 0) + '%';
+  $('progTxt').textContent = items.length ? `${dn} von ${items.length} erledigt` : '';
   $('todos').innerHTML = items.length ? items.map(([k, v]) => `<div class="row ${v.done ? 'done' : ''}"><button class="chk" data-todo="${k}">${CHECK}</button><span class="t">${esc(v.text)}</span><button class="x" data-deltodo="${k}">✕</button></div>`).join('') : '<div class="empty">Alles erledigt 🎉</div>';
 }
 const addTodo = () => { const t = $('todoIn').value.trim(); if (!t) return; push(ref(db, 'todos'), { text: t, done: false, ts: Date.now() }); $('todoIn').value = ''; };
@@ -280,6 +318,7 @@ async function loadWeather() {
     const { lat, lon } = settings.geo;
     const w = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`)).json();
     const c = w.current, d = w.daily;
+    $('weather').closest('.card').style.setProperty('--wg', !c.is_day ? '#5a4aff44' : c.weather_code <= 2 ? '#ffb84a44' : c.weather_code >= 51 ? '#4a7bff44' : '#9aa0c944');
     $('city').textContent = city;
     $('weather').innerHTML = `<div class="now">${wIcon(c.weather_code, c.is_day)}<div><div class="temp">${Math.round(c.temperature_2m)}°</div><div class="sub">${WTXT(c.weather_code)} · gefühlt ${Math.round(c.apparent_temperature)}° · Wind ${Math.round(c.wind_speed_10m)} km/h</div></div></div>
     <div class="days">${d.time.slice(1, 6).map((t, i) => `<div class="day">${new Date(t).toLocaleDateString('de-DE', { weekday: 'short' })}${wIcon(d.weather_code[i + 1])}<div>${Math.round(d.temperature_2m_max[i + 1])}° <span class="sub">${Math.round(d.temperature_2m_min[i + 1])}°</span></div><div class="sub">💧${d.precipitation_probability_max[i + 1] ?? 0}%</div></div>`).join('')}</div>`;
