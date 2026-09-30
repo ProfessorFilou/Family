@@ -43,7 +43,7 @@ header small{color:var(--mut);font-weight:700}
 .iconbtn:hover{transform:rotate(70deg);background:var(--card2)}
 
 /* Grid & Cards */
-.grid{max-width:1600px;margin:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.grid{max-width:1600px;margin:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}
 .card{background:radial-gradient(420px 240px at 85% 0,var(--wg,transparent),transparent),linear-gradient(160deg,#2b3164c8,#1f2447b8);backdrop-filter:blur(14px);border:1px solid #ffffff18;border-radius:var(--r);padding:22px;position:relative;overflow:hidden;box-shadow:0 18px 44px #0005;transition:transform .3s,box-shadow .3s;animation:rise .7s cubic-bezier(.2,.8,.2,1) both;min-height:0}
 .card:hover{transform:translateY(-3px);box-shadow:0 26px 54px #0006}
 .card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--acc)}
@@ -52,18 +52,12 @@ header small{color:var(--mut);font-weight:700}
 .card{scrollbar-width:thin;scrollbar-color:#ffffff30 transparent}
 @keyframes rise{from{opacity:0;transform:translateY(24px)}}
 
-@media(min-width:1000px){
+@media(min-width:1100px){
   body{height:100dvh;display:flex;flex-direction:column;overflow:hidden;padding-bottom:16px}
   #app{flex:1;min-height:0;display:flex;flex-direction:column;width:100%;max-width:1600px;margin:auto}
   header{width:100%;margin:0 0 12px}
-  .grid{flex:1;min-height:0;grid-template-columns:1fr 1.25fr 1fr;grid-template-rows:1fr 1fr;gap:16px}
+  .grid{flex:1;min-height:0;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:16px}
   .card{overflow-y:auto}
-  .card[data-slot="todo"]{grid-column:1;grid-row:1/3}
-  .card[data-slot="weather"]{grid-column:2;grid-row:1/3}
-  .card[data-slot="trash"]{grid-column:3;grid-row:1}
-  .card[data-slot="calendar"]{grid-column:3;grid-row:2}
-  .grid:not(:has([data-slot="todo"]:not(.hide))) [data-slot="weather"]{grid-column:1/3}
-  .grid:not(:has([data-slot="weather"]:not(.hide))) [data-slot="todo"]{grid-column:1/3}
 }
 
 /* Rows */
@@ -97,7 +91,6 @@ header small{color:var(--mut);font-weight:700}
 .drow svg{width:32px;height:32px}
 .bar{height:8px;border-radius:8px;background:#ffffff18;position:relative}
 .bar i{position:absolute;top:0;bottom:0;border-radius:8px;background:linear-gradient(90deg,#6ea8ff,#ffc94a)}
-#map{height:160px;border-radius:18px;margin-top:12px;border:1px solid #ffffff14;overflow:hidden}
 .suggestions{position:absolute;left:0;right:0;top:100%;background:var(--card2);border-radius:16px;margin-top:4px;max-height:200px;overflow-y:auto;z-index:20;box-shadow:0 12px 30px #0007;display:none}
 .suggestions div{padding:10px 14px;cursor:pointer;font-size:14px;font-weight:700;border-bottom:1px solid #ffffff0a}
 .suggestions div:hover{background:#ffffff12}
@@ -110,14 +103,13 @@ header small{color:var(--mut);font-weight:700}
 .bday-row{border-left:4px solid #ff7a8a !important}
 
 /* Dialog / Settings */
-dialog{border:0;border-radius:28px;background:linear-gradient(160deg,#2b3164,#1f2447);color:var(--txt);padding:0;width:min(500px,94vw);max-height:90vh;overflow:hidden;box-shadow:0 30px 80px #000a}
+dialog{border:0;border-radius:28px;background:linear-gradient(160deg,#2b3164,#1f2447);color:var(--txt);padding:0;width:min(520px,94vw);max-height:92vh;overflow:hidden;box-shadow:0 30px 80px #000a}
 dialog::backdrop{background:#000a}
-.dlg-inner{padding:24px;overflow-y:auto;max-height:90vh}
+.dlg-inner{padding:24px;overflow-y:auto;max-height:92vh}
 .dlg-inner h2{margin-bottom:6px;font-size:22px}
 .dlg-sec{margin:18px 0 8px;font-size:13px;color:var(--mut);font-weight:900;text-transform:uppercase;letter-spacing:.4px}
 label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0 4px}
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #ffffff0d}
-.toggle-row:last-of-type{border:0}
 .toggle-row span{font-weight:700;font-size:15px}
 .toggle{position:relative;width:52px;height:30px;background:var(--card2);border-radius:20px;cursor:pointer;transition:.25s;flex:none}
 .toggle.on{background:linear-gradient(135deg,var(--violet),#5f8bff)}
@@ -129,6 +121,7 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
 .person-row .t{flex:1;font-weight:700}
 .person-add{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-top:8px}
 .person-add input{margin:0;padding:10px 12px}
+#settingsMap{height:150px;border-radius:16px;margin-top:10px;border:1px solid #ffffff14;overflow:hidden;display:none}
 
 /* Weather anim */
 .spin{transform-origin:32px 32px;animation:spin 14s linear infinite}
@@ -178,7 +171,12 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
     <section class="card" data-slot="weather">
       <h2><i style="background:#ffc94a33"><svg width="24" height="24" viewBox="0 0 64 64"><use href="#sunI"/></svg></i>Wetter <span class="sub" id="city"></span></h2>
       <div id="weather"><div class="empty">Lade …</div></div>
-      <div id="map" class="hide"></div>
+    </section>
+
+    <section class="card" data-slot="shop">
+      <h2><i style="background:#ff9f4333"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9f43" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 002 1.6h9.7a2 2 0 002-1.6L23 6H6"/></svg></i>Einkaufsliste</h2>
+      <div class="add"><input id="shopIn" placeholder="Was brauchen wir …"><button class="btn" id="shopAdd">+</button></div>
+      <div id="shop"></div>
     </section>
 
     <section class="card" data-slot="trash">
@@ -202,11 +200,12 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
 <dialog id="dlg">
   <div class="dlg-inner">
     <h2>Einstellungen</h2>
-    <p class="hint" style="margin-bottom:12px">Alles speichert sich für die ganze Familie.</p>
+    <p class="hint" style="margin-bottom:12px">Alles speichert sich für die ganze Familie und ist hier anpassbar.</p>
 
     <div class="dlg-sec">Karten ein-/ausblenden</div>
     <div class="toggle-row"><span>✅ Todo</span><div class="toggle" id="tgTodo" data-key="showTodo"></div></div>
-    <div class="toggle-row"><span>☀️ Wetter + Karte</span><div class="toggle" id="tgWeather" data-key="showWeather"></div></div>
+    <div class="toggle-row"><span>☀️ Wetter</span><div class="toggle" id="tgWeather" data-key="showWeather"></div></div>
+    <div class="toggle-row"><span>🛒 Einkaufsliste</span><div class="toggle" id="tgShop" data-key="showShop"></div></div>
     <div class="toggle-row"><span>🗑️ Müllabfuhr</span><div class="toggle" id="tgTrash" data-key="showTrash"></div></div>
     <div class="toggle-row"><span>📅 Kalender</span><div class="toggle" id="tgCalendar" data-key="showCalendar"></div></div>
     <div class="toggle-row"><span>✨ Partikel-Animation</span><div class="toggle" id="tgFx" data-key="showFx"></div></div>
@@ -220,13 +219,14 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
     </div>
     <p class="hint">Geburtstage erscheinen automatisch im Kalender.</p>
 
-    <div class="dlg-sec">Wetter</div>
-    <label>Standort</label>
+    <div class="dlg-sec">Wetter-Standort</div>
+    <label>Ort</label>
     <div class="city-wrap">
       <input id="sCity" placeholder="z. B. München, Berlin …" autocomplete="off">
       <div class="suggestions" id="sugg"></div>
     </div>
     <button class="btn full ghost" id="sGeo" type="button" style="margin-top:6px">📍 Meinen aktuellen Standort verwenden</button>
+    <div id="settingsMap"></div>
 
     <div class="dlg-sec">Kalender (iCal)</div>
     <label>Google Kalender (geheime Adresse, endet auf basic.ics)</label>
@@ -318,15 +318,16 @@ $('sOut').onclick = () => { localStorage.removeItem('fd_session'); location.relo
 
 /* ---------- App ---------- */
 let settings = {
-  showTodo: true, showWeather: true, showTrash: true, showCalendar: true, showFx: true
+  showTodo: true, showWeather: true, showShop: true, showTrash: true, showCalendar: true, showFx: true
 };
 let peopleData = {};
-let map = null, mapMarker = null;
+let settingsMap = null, settingsMarker = null;
 
 function applyVisibility() {
   const slots = {
     todo: settings.showTodo !== false,
     weather: settings.showWeather !== false,
+    shop: settings.showShop !== false,
     trash: settings.showTrash !== false,
     calendar: settings.showCalendar !== false
   };
@@ -353,6 +354,7 @@ function start(user) {
   $('tDate').valueAsDate = new Date();
 
   onValue(ref(db, 'todos'), s => renderTodos(s.val() || {}));
+  onValue(ref(db, 'shop'), s => renderShop(s.val() || {}));
   onValue(ref(db, 'trash'), s => renderTrash(s.val() || {}));
   onValue(ref(db, 'people'), s => {
     peopleData = s.val() || {};
@@ -364,6 +366,7 @@ function start(user) {
     settings = {
       showTodo: v.showTodo !== false,
       showWeather: v.showWeather !== false,
+      showShop: v.showShop !== false,
       showTrash: v.showTrash !== false,
       showCalendar: v.showCalendar !== false,
       showFx: v.showFx !== false,
@@ -402,6 +405,21 @@ const addTodo = () => {
 $('todoAdd').onclick = addTodo;
 $('todoIn').addEventListener('keydown', e => e.key === 'Enter' && addTodo());
 
+/* Einkaufsliste */
+function renderShop(d) {
+  const items = Object.entries(d).sort((a, b) => (a[1].done - b[1].done) || (a[1].ts - b[1].ts));
+  $('shop').innerHTML = items.length
+    ? items.map(([k, v]) => `<div class="row ${v.done ? 'done' : ''}" style="--c:#ff9f43"><button class="chk" data-shop="${k}">${CHECK}</button><span class="t">${esc(v.text)}</span><button class="x" data-delshop="${k}">✕</button></div>`).join('')
+    : '<div class="empty">Liste ist leer 🛒</div>';
+}
+const addShop = () => {
+  const t = $('shopIn').value.trim(); if (!t) return;
+  push(ref(db, 'shop'), { text: t, done: false, ts: Date.now() });
+  $('shopIn').value = '';
+};
+$('shopAdd').onclick = addShop;
+$('shopIn').addEventListener('keydown', e => e.key === 'Enter' && addShop());
+
 /* Müll */
 const COL = { 'Restmüll': '#9aa0c9', 'Bio': '#3ee0b5', 'Gelber Sack': '#ffc94a', 'Papier': '#6ea8ff' };
 let trashData = {};
@@ -431,6 +449,8 @@ document.addEventListener('click', async e => {
   const D = b.dataset;
   if (D.todo) update(ref(db, 'todos/' + D.todo), { done: !b.closest('.row').classList.contains('done') });
   if (D.deltodo) remove(ref(db, 'todos/' + D.deltodo));
+  if (D.shop) update(ref(db, 'shop/' + D.shop), { done: !b.closest('.row').classList.contains('done') });
+  if (D.delshop) remove(ref(db, 'shop/' + D.delshop));
   if (D.deltrash) remove(ref(db, 'trash/' + D.deltrash));
   if (D.delperson) remove(ref(db, 'people/' + D.delperson));
   if (D.trash) {
@@ -505,7 +525,7 @@ function loop() {
 }
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) loop();
 
-/* Wetter laden + Karte */
+/* Wetter laden (ohne Karte auf dem Hauptbildschirm) */
 async function loadWeather() {
   if (settings.showWeather === false) return;
   const city = settings.city || 'München';
@@ -552,20 +572,6 @@ async function loadWeather() {
       </div>
       <div class="hours">${hours}</div>${days}`;
 
-    const mapEl = $('map');
-    mapEl.classList.remove('hide');
-    if (!map) {
-      map = L.map(mapEl, { zoomControl: false, attributionControl: false }).setView([lat, lon], 11);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18 }).addTo(map);
-      mapMarker = L.circleMarker([lat, lon], {
-        radius: 8, color: '#8b7bff', fillColor: '#8b7bff', fillOpacity: 0.9, weight: 2
-      }).addTo(map);
-    } else {
-      map.setView([lat, lon], 11);
-      mapMarker.setLatLng([lat, lon]);
-    }
-    setTimeout(() => map.invalidateSize(), 200);
-
     setFx((code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95 ? 'rain'
       : (code >= 71 && code <= 77) || code === 85 || code === 86 ? 'snow'
       : code === 3 || code === 45 || code === 48 ? 'fog'
@@ -574,6 +580,29 @@ async function loadWeather() {
     $('weather').innerHTML = '<div class="empty">Wetter gerade nicht erreichbar.</div>';
     console.error(e);
   }
+}
+
+/* Einstellungen-Karte (nur hier) */
+function updateSettingsMap() {
+  const el = $('settingsMap');
+  if (!settings.geo || !settings.geo.lat) {
+    el.style.display = 'none';
+    return;
+  }
+  el.style.display = 'block';
+  const { lat, lon } = settings.geo;
+  if (!settingsMap) {
+    settingsMap = L.map(el, { zoomControl: true, attributionControl: false }).setView([lat, lon], 12);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap'
+    }).addTo(settingsMap);
+    settingsMarker = L.marker([lat, lon]).addTo(settingsMap);
+  } else {
+    settingsMap.setView([lat, lon], 12);
+    settingsMarker.setLatLng([lat, lon]);
+  }
+  setTimeout(() => settingsMap.invalidateSize(), 150);
 }
 
 /* ========== Geburtstage ========== */
@@ -588,21 +617,15 @@ function getUpcomingBirthdays(daysAhead = 35) {
     if (!p.birthday || !p.name) continue;
     const [y, m, d] = p.birthday.split('-').map(Number);
     if (!m || !d) continue;
-
-    // nächstes Vorkommen
     let next = new Date(today.getFullYear(), m - 1, d);
     if (next < today) next = new Date(today.getFullYear() + 1, m - 1, d);
     if (next > end) continue;
-
     const age = next.getFullYear() - y;
     out.push({
-      dt: next,
-      allDay: true,
+      dt: next, allDay: true,
       title: `🎂 ${p.name}`,
       sub: age > 0 ? `wird ${age}` : 'Geburtstag',
-      src: 'Geburtstag',
-      color: '#ff7a8a',
-      isBday: true
+      src: 'Geburtstag', color: '#ff7a8a', isBday: true
     });
   }
   return out;
@@ -656,8 +679,7 @@ function parseICS(txt, src, color) {
       out.push({
         dt, allDay,
         title: (m('SUMMARY') || 'Termin').replace(/\\,/g, ',').replace(/\\n/g, ' '),
-        src, color,
-        isBday: false
+        src, color, isBday: false
       });
     }
   }
@@ -673,8 +695,6 @@ async function loadCalendars() {
   ].filter(s => s[1]);
 
   let all = [], fail = 0;
-
-  // Externe Kalender
   if (srcs.length) {
     await Promise.all(srcs.map(async ([n, u, c]) => {
       try {
@@ -686,12 +706,9 @@ async function loadCalendars() {
     }));
   }
 
-  // Geburtstage hinzufügen
   all = all.concat(getUpcomingBirthdays(35));
-
   all.sort((a, b) => a.dt - b.dt);
 
-  // Status
   const hasCal = srcs.length > 0;
   const hasBday = Object.keys(peopleData).length > 0;
   if (!hasCal && !hasBday) {
@@ -706,7 +723,6 @@ async function loadCalendars() {
     return;
   }
 
-  // Nach Tag gruppieren
   const groups = {};
   const todayStr = new Date().toDateString();
   for (const e of all.slice(0, 25)) {
@@ -719,20 +735,12 @@ async function loadCalendars() {
   for (const [dayKey, events] of Object.entries(groups)) {
     const d = new Date(dayKey);
     const isToday = dayKey === todayStr;
-    const label = isToday
-      ? 'Heute'
-      : d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
-
-    html += `<div class="day-group">
-      <div class="day-label ${isToday ? 'today' : ''}">${label}</div>`;
+    const label = isToday ? 'Heute' : d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+    html += `<div class="day-group"><div class="day-label ${isToday ? 'today' : ''}">${label}</div>`;
     for (const e of events) {
-      const timeStr = e.allDay
-        ? (e.isBday ? e.sub : 'ganztägig')
-        : e.dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      const timeStr = e.allDay ? (e.isBday ? e.sub : 'ganztägig') : e.dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
       html += `<div class="row ${e.isBday ? 'bday-row' : 'ev'}" style="--c:${e.color}">
-        <span class="t">${esc(e.title)}<br>
-          <span class="sub">${timeStr}${e.src && !e.isBday ? ' · ' + e.src : ''}</span>
-        </span>
+        <span class="t">${esc(e.title)}<br><span class="sub">${timeStr}${e.src && !e.isBday ? ' · ' + e.src : ''}</span></span>
       </div>`;
     }
     html += '</div>';
@@ -740,18 +748,18 @@ async function loadCalendars() {
   $('events').innerHTML = html;
 }
 
-/* Einstellungen + Ortsvorschläge */
+/* Einstellungen */
 $('setbtn').onclick = () => {
   $('sCity').value = settings.city || '';
   $('sGoogle').value = settings.google || '';
   $('sApple').value = settings.apple || '';
   document.querySelectorAll('.toggle').forEach(tg => {
-    const key = tg.dataset.key;
-    tg.classList.toggle('on', settings[key] !== false);
+    tg.classList.toggle('on', settings[tg.dataset.key] !== false);
   });
   renderPeopleList();
   $('sugg').style.display = 'none';
   $('dlg').showModal();
+  setTimeout(updateSettingsMap, 200);
 };
 
 document.querySelectorAll('.toggle').forEach(tg => {
@@ -782,6 +790,7 @@ $('sugg').addEventListener('click', e => {
   $('sCity').value = d.dataset.name;
   settings.geo = { name: d.dataset.name, lat: +d.dataset.lat, lon: +d.dataset.lon };
   $('sugg').style.display = 'none';
+  updateSettingsMap();
 });
 document.addEventListener('click', e => {
   if (!e.target.closest('.city-wrap')) $('sugg').style.display = 'none';
@@ -795,6 +804,7 @@ $('sSave').onclick = async () => {
     apple: $('sApple').value.trim(),
     showTodo: $('tgTodo').classList.contains('on'),
     showWeather: $('tgWeather').classList.contains('on'),
+    showShop: $('tgShop').classList.contains('on'),
     showTrash: $('tgTrash').classList.contains('on'),
     showCalendar: $('tgCalendar').classList.contains('on'),
     showFx: $('tgFx').classList.contains('on')
@@ -807,12 +817,13 @@ $('sSave').onclick = async () => {
 $('sGeo').onclick = () => {
   $('sErr').textContent = 'Suche Standort …';
   navigator.geolocation.getCurrentPosition(async p => {
-    await update(ref(db, 'settings'), {
-      city: 'Mein Standort',
-      geo: { name: 'Mein Standort', lat: p.coords.latitude, lon: p.coords.longitude }
-    });
+    const geo = { name: 'Mein Standort', lat: p.coords.latitude, lon: p.coords.longitude };
+    await update(ref(db, 'settings'), { city: 'Mein Standort', geo });
+    settings.geo = geo;
+    settings.city = 'Mein Standort';
+    $('sCity').value = 'Mein Standort';
     $('sErr').textContent = '';
-    $('dlg').close();
+    updateSettingsMap();
   }, () => $('sErr').textContent = 'Standort nicht verfügbar – Zugriff im Browser erlauben.');
 };
 
