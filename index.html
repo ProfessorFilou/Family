@@ -31,6 +31,7 @@ input:focus,select:focus{border-color:var(--violet)}
 .btn{background:linear-gradient(135deg,var(--violet),#5f8bff);border:0;border-radius:18px;padding:13px 20px;font-weight:900;cursor:pointer;transition:transform .15s;box-shadow:0 8px 20px #8b7bff55}
 .btn:hover{transform:scale(1.03)}.btn:active{transform:scale(.96)}
 .btn.full{width:100%}.btn.ghost{background:var(--card2);box-shadow:none}
+.btn.sm{padding:8px 14px;font-size:13px}
 .err{color:var(--coral);font-size:13px;min-height:18px;margin-top:6px}
 
 /* Header */
@@ -61,7 +62,6 @@ header small{color:var(--mut);font-weight:700}
   .card[data-slot="weather"]{grid-column:2;grid-row:1/3}
   .card[data-slot="trash"]{grid-column:3;grid-row:1}
   .card[data-slot="calendar"]{grid-column:3;grid-row:2}
-  /* Wenn Karten ausgeblendet sind, passt sich das Grid automatisch an */
   .grid:not(:has([data-slot="todo"]:not(.hide))) [data-slot="weather"]{grid-column:1/3}
   .grid:not(:has([data-slot="weather"]:not(.hide))) [data-slot="todo"]{grid-column:1/3}
 }
@@ -103,8 +103,14 @@ header small{color:var(--mut);font-weight:700}
 .suggestions div:hover{background:#ffffff12}
 .city-wrap{position:relative}
 
+/* Calendar groups */
+.day-group{margin-bottom:14px}
+.day-label{font-size:13px;font-weight:900;color:var(--mut);margin-bottom:6px;padding-left:4px;text-transform:uppercase;letter-spacing:.3px}
+.day-label.today{color:var(--mint)}
+.bday-row{border-left:4px solid #ff7a8a !important}
+
 /* Dialog / Settings */
-dialog{border:0;border-radius:28px;background:linear-gradient(160deg,#2b3164,#1f2447);color:var(--txt);padding:0;width:min(480px,94vw);max-height:90vh;overflow:hidden;box-shadow:0 30px 80px #000a}
+dialog{border:0;border-radius:28px;background:linear-gradient(160deg,#2b3164,#1f2447);color:var(--txt);padding:0;width:min(500px,94vw);max-height:90vh;overflow:hidden;box-shadow:0 30px 80px #000a}
 dialog::backdrop{background:#000a}
 .dlg-inner{padding:24px;overflow-y:auto;max-height:90vh}
 .dlg-inner h2{margin-bottom:6px;font-size:22px}
@@ -118,6 +124,11 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
 .toggle::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 2px 6px #0004}
 .toggle.on::after{left:25px}
 .hint{font-size:12px;color:var(--mut);margin-top:4px;line-height:1.4}
+.people-list{margin:10px 0}
+.person-row{display:flex;align-items:center;gap:10px;background:var(--card2);border-radius:16px;padding:10px 12px;margin-bottom:6px}
+.person-row .t{flex:1;font-weight:700}
+.person-add{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-top:8px}
+.person-add input{margin:0;padding:10px 12px}
 
 /* Weather anim */
 .spin{transform-origin:32px 32px;animation:spin 14s linear infinite}
@@ -183,7 +194,7 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
 
     <section class="card" data-slot="calendar">
       <h2><i style="background:#ff7a8a33"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff7a8a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="4"/><path d="M8 3v4M16 3v4M3 11h18"/></svg></i>Kalender <span class="sub" id="calState"></span></h2>
-      <div id="events"><div class="empty">Kalender-Link in den Einstellungen hinterlegen.</div></div>
+      <div id="events"><div class="empty">Kalender-Link oder Geburtstage in den Einstellungen hinterlegen.</div></div>
     </section>
   </main>
 </div>
@@ -191,7 +202,7 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
 <dialog id="dlg">
   <div class="dlg-inner">
     <h2>Einstellungen</h2>
-    <p class="hint" style="margin-bottom:12px">Alles was du hier änderst, speichert sich für die ganze Familie.</p>
+    <p class="hint" style="margin-bottom:12px">Alles speichert sich für die ganze Familie.</p>
 
     <div class="dlg-sec">Karten ein-/ausblenden</div>
     <div class="toggle-row"><span>✅ Todo</span><div class="toggle" id="tgTodo" data-key="showTodo"></div></div>
@@ -199,6 +210,15 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
     <div class="toggle-row"><span>🗑️ Müllabfuhr</span><div class="toggle" id="tgTrash" data-key="showTrash"></div></div>
     <div class="toggle-row"><span>📅 Kalender</span><div class="toggle" id="tgCalendar" data-key="showCalendar"></div></div>
     <div class="toggle-row"><span>✨ Partikel-Animation</span><div class="toggle" id="tgFx" data-key="showFx"></div></div>
+
+    <div class="dlg-sec">Familie & Geburtstage</div>
+    <div class="people-list" id="peopleList"></div>
+    <div class="person-add">
+      <input id="pName" placeholder="Name">
+      <input id="pDate" type="date">
+      <button class="btn sm" id="pAdd">+</button>
+    </div>
+    <p class="hint">Geburtstage erscheinen automatisch im Kalender.</p>
 
     <div class="dlg-sec">Wetter</div>
     <label>Standort</label>
@@ -300,6 +320,7 @@ $('sOut').onclick = () => { localStorage.removeItem('fd_session'); location.relo
 let settings = {
   showTodo: true, showWeather: true, showTrash: true, showCalendar: true, showFx: true
 };
+let peopleData = {};
 let map = null, mapMarker = null;
 
 function applyVisibility() {
@@ -326,13 +347,18 @@ function start(user) {
     $('hello').textContent = (h < 11 ? 'Guten Morgen' : h < 18 ? 'Hallo' : 'Guten Abend') + ', ' + user;
     $('clock').textContent = new Date().toLocaleString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
     const ds = new Date().toDateString();
-    if (ds !== lastDay) { lastDay = ds; renderTrash(trashData); }
+    if (ds !== lastDay) { lastDay = ds; renderTrash(trashData); loadCalendars(); }
   };
   tick(); setInterval(tick, 20000);
   $('tDate').valueAsDate = new Date();
 
   onValue(ref(db, 'todos'), s => renderTodos(s.val() || {}));
   onValue(ref(db, 'trash'), s => renderTrash(s.val() || {}));
+  onValue(ref(db, 'people'), s => {
+    peopleData = s.val() || {};
+    renderPeopleList();
+    loadCalendars();
+  });
   onValue(ref(db, 'settings'), s => {
     const v = s.val() || {};
     settings = {
@@ -406,6 +432,7 @@ document.addEventListener('click', async e => {
   if (D.todo) update(ref(db, 'todos/' + D.todo), { done: !b.closest('.row').classList.contains('done') });
   if (D.deltodo) remove(ref(db, 'todos/' + D.deltodo));
   if (D.deltrash) remove(ref(db, 'trash/' + D.deltrash));
+  if (D.delperson) remove(ref(db, 'people/' + D.delperson));
   if (D.trash) {
     const v = trashData[D.trash], nowDone = !v.done;
     await update(ref(db, 'trash/' + D.trash), { done: nowDone });
@@ -525,14 +552,11 @@ async function loadWeather() {
       </div>
       <div class="hours">${hours}</div>${days}`;
 
-    // Karte
     const mapEl = $('map');
     mapEl.classList.remove('hide');
     if (!map) {
       map = L.map(mapEl, { zoomControl: false, attributionControl: false }).setView([lat, lon], 11);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 18
-      }).addTo(map);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18 }).addTo(map);
       mapMarker = L.circleMarker([lat, lon], {
         radius: 8, color: '#8b7bff', fillColor: '#8b7bff', fillOpacity: 0.9, weight: 2
       }).addTo(map);
@@ -552,10 +576,69 @@ async function loadWeather() {
   }
 }
 
-/* Kalender */
+/* ========== Geburtstage ========== */
+function getUpcomingBirthdays(daysAhead = 35) {
+  const out = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const end = new Date(today);
+  end.setDate(end.getDate() + daysAhead);
+
+  for (const [id, p] of Object.entries(peopleData)) {
+    if (!p.birthday || !p.name) continue;
+    const [y, m, d] = p.birthday.split('-').map(Number);
+    if (!m || !d) continue;
+
+    // nächstes Vorkommen
+    let next = new Date(today.getFullYear(), m - 1, d);
+    if (next < today) next = new Date(today.getFullYear() + 1, m - 1, d);
+    if (next > end) continue;
+
+    const age = next.getFullYear() - y;
+    out.push({
+      dt: next,
+      allDay: true,
+      title: `🎂 ${p.name}`,
+      sub: age > 0 ? `wird ${age}` : 'Geburtstag',
+      src: 'Geburtstag',
+      color: '#ff7a8a',
+      isBday: true
+    });
+  }
+  return out;
+}
+
+function renderPeopleList() {
+  const list = $('peopleList');
+  const entries = Object.entries(peopleData);
+  if (!entries.length) {
+    list.innerHTML = '<div class="empty" style="padding:8px">Noch keine Personen angelegt.</div>';
+    return;
+  }
+  list.innerHTML = entries.map(([id, p]) => {
+    const dateStr = p.birthday
+      ? new Date(p.birthday + 'T12:00').toLocaleDateString('de-DE', { day: 'numeric', month: 'long' })
+      : '–';
+    return `<div class="person-row">
+      <span class="t">${esc(p.name)}<br><span class="sub">${dateStr}</span></span>
+      <button class="x" data-delperson="${id}">✕</button>
+    </div>`;
+  }).join('');
+}
+
+$('pAdd').onclick = () => {
+  const name = $('pName').value.trim();
+  const birthday = $('pDate').value;
+  if (!name || !birthday) return;
+  push(ref(db, 'people'), { name, birthday });
+  $('pName').value = '';
+  $('pDate').value = '';
+};
+
+/* ========== Kalender ========== */
 function parseICS(txt, src, color) {
   txt = txt.replace(/\r?\n[ \t]/g, '');
-  const out = [], now = new Date(), end = new Date(now.getTime() + 28 * 864e5);
+  const out = [], now = new Date(), end = new Date(now.getTime() + 35 * 864e5);
   const start = new Date(now.toDateString());
   for (const blk of txt.split('BEGIN:VEVENT').slice(1)) {
     const m = k => {
@@ -573,7 +656,8 @@ function parseICS(txt, src, color) {
       out.push({
         dt, allDay,
         title: (m('SUMMARY') || 'Termin').replace(/\\,/g, ',').replace(/\\n/g, ' '),
-        src, color
+        src, color,
+        isBday: false
       });
     }
   }
@@ -582,34 +666,78 @@ function parseICS(txt, src, color) {
 
 async function loadCalendars() {
   if (settings.showCalendar === false) return;
+
   const srcs = [
     ['Google', settings.google, '#8b7bff'],
-    ['Apple', settings.apple, '#ff7a8a']
+    ['Apple', settings.apple, '#ff9f43']
   ].filter(s => s[1]);
-  if (!srcs.length) {
-    $('events').innerHTML = '<div class="empty">Kalender-Link in den Einstellungen hinterlegen.</div>';
+
+  let all = [], fail = 0;
+
+  // Externe Kalender
+  if (srcs.length) {
+    await Promise.all(srcs.map(async ([n, u, c]) => {
+      try {
+        const url = u.replace(/^webcal:/i, 'https:');
+        const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+        if (!r.ok) throw new Error();
+        all = all.concat(parseICS(await r.text(), n, c));
+      } catch (e) { fail++; }
+    }));
+  }
+
+  // Geburtstage hinzufügen
+  all = all.concat(getUpcomingBirthdays(35));
+
+  all.sort((a, b) => a.dt - b.dt);
+
+  // Status
+  const hasCal = srcs.length > 0;
+  const hasBday = Object.keys(peopleData).length > 0;
+  if (!hasCal && !hasBday) {
+    $('events').innerHTML = '<div class="empty">Kalender-Link oder Geburtstage in den Einstellungen hinterlegen.</div>';
     $('calState').textContent = '';
     return;
   }
-  let all = [], fail = 0;
-  await Promise.all(srcs.map(async ([n, u, c]) => {
-    try {
-      const url = u.replace(/^webcal:/i, 'https:');
-      const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
-      if (!r.ok) throw new Error();
-      all = all.concat(parseICS(await r.text(), n, c));
-    } catch (e) { fail++; }
-  }));
-  all.sort((a, b) => a.dt - b.dt);
-  $('calState').textContent = fail ? '⚠︎ teilweise offline' : '● live';
-  $('events').innerHTML = all.length
-    ? all.slice(0, 18).map(e => `
-      <div class="row ev" style="--c:${e.color}">
+  $('calState').textContent = fail ? '⚠︎ teilweise offline' : (hasCal ? '● live' : '🎂 Geburtstage');
+
+  if (!all.length) {
+    $('events').innerHTML = '<div class="empty">Keine Termine oder Geburtstage in den nächsten 5 Wochen.</div>';
+    return;
+  }
+
+  // Nach Tag gruppieren
+  const groups = {};
+  const todayStr = new Date().toDateString();
+  for (const e of all.slice(0, 25)) {
+    const key = e.dt.toDateString();
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(e);
+  }
+
+  let html = '';
+  for (const [dayKey, events] of Object.entries(groups)) {
+    const d = new Date(dayKey);
+    const isToday = dayKey === todayStr;
+    const label = isToday
+      ? 'Heute'
+      : d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+
+    html += `<div class="day-group">
+      <div class="day-label ${isToday ? 'today' : ''}">${label}</div>`;
+    for (const e of events) {
+      const timeStr = e.allDay
+        ? (e.isBday ? e.sub : 'ganztägig')
+        : e.dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      html += `<div class="row ${e.isBday ? 'bday-row' : 'ev'}" style="--c:${e.color}">
         <span class="t">${esc(e.title)}<br>
-          <span class="sub">${e.dt.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}${e.allDay ? ' · ganztägig' : ' · ' + e.dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} · ${e.src}</span>
+          <span class="sub">${timeStr}${e.src && !e.isBday ? ' · ' + e.src : ''}</span>
         </span>
-      </div>`).join('')
-    : '<div class="empty">Keine Termine in den nächsten 4 Wochen.</div>';
+      </div>`;
+    }
+    html += '</div>';
+  }
+  $('events').innerHTML = html;
 }
 
 /* Einstellungen + Ortsvorschläge */
@@ -617,19 +745,17 @@ $('setbtn').onclick = () => {
   $('sCity').value = settings.city || '';
   $('sGoogle').value = settings.google || '';
   $('sApple').value = settings.apple || '';
-  // Toggles setzen
   document.querySelectorAll('.toggle').forEach(tg => {
     const key = tg.dataset.key;
     tg.classList.toggle('on', settings[key] !== false);
   });
+  renderPeopleList();
   $('sugg').style.display = 'none';
   $('dlg').showModal();
 };
 
 document.querySelectorAll('.toggle').forEach(tg => {
-  tg.onclick = () => {
-    tg.classList.toggle('on');
-  };
+  tg.onclick = () => tg.classList.toggle('on');
 });
 
 // Ortsvorschläge
