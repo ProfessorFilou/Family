@@ -155,7 +155,7 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
   </header>
   <main id="main">
     <section class="card" id="cTodo" data-w="Todo" style="--acc:var(--violet)">
-      <h2><i style="background:#8b7bff33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12l5 5L20 6"/></svg></i>Todo <span class="sub"><button class="lnk" data-clr="todos">Erledigte löschen</button></span></h2>
+      <h2><i style="background:#8b7bff33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12l5 5L20 6"/></svg></i>To Do <span class="sub"><button class="lnk" data-clr="todos">Erledigte löschen</button></span></h2>
       <div class="prog"><div id="progBar"></div></div><div class="sub" id="progTxt" style="margin-bottom:10px;min-height:15px"></div>
       <div class="add"><input id="todoIn" placeholder="Neue Aufgabe …"><button class="btn" id="todoAdd">+</button></div>
       <div id="todos"></div>
@@ -220,7 +220,7 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
       <button type="button" class="btn g" data-scale="1.3">XL</button>
     </div>
     <div class="sec">Layout</div>
-    <button type="button" class="btn g full" id="layoutEditBtn">Module verschieben (Drag & Drop)</button>
+    <button type="button" class="btn g full" id="layoutEditBtn">Module im Raster verschieben (Drag & Drop)</button>
     <p class="sub" style="margin-top:8px">Änderungen gelten sofort und für alle Geräte der Familie.</p>
   </div>
 
@@ -236,6 +236,8 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
     <input id="sGoogle" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics" inputmode="url" autocapitalize="off">
     <label>Apple / iCloud Kalender (öffentlicher webcal-Link)</label>
     <input id="sApple" placeholder="webcal://…" inputmode="url" autocapitalize="off">
+    <label>Müllabfuhr-Kalender (ICS / webcal, optional – z. B. von der Gemeinde-Website)</label>
+    <input id="sTrashIcs" placeholder="https://… oder webcal://…" inputmode="url" autocapitalize="off">
     <button class="btn g full" id="calTestBtn">Verbindung testen</button>
     <div class="sub" id="calTest" style="margin-top:8px;line-height:1.5"></div>
   </div>
@@ -279,9 +281,9 @@ const day0 = () => new Date(new Date().toDateString());
 
 /* ---------- Einstellungen (sofort wirksam, lokal + Firebase) ---------- */
 const DEF = { showTodo: true, showWeather: true, showCalendar: true, showTrash: true, showShop: true, showMeals: false, showNotes: false, showCd: false, showMeds: false,
-  showFx: true, keepAwake: false, dim: false, light: false, scale: 1, order: [], city: 'München', geo: null, google: '', apple: '' };
+  showFx: true, keepAwake: false, dim: false, light: false, scale: 1, order: [], city: 'München', geo: null, google: '', apple: '', trashIcs: '' };
 let S = { ...DEF, ...jget('fd_set', {}) };
-const WID = [['showTodo','Todo'],['showWeather','Wetter'],['showCalendar','Kalender & Geburtstage'],['showTrash','Müllabfuhr'],['showShop','Einkaufsliste'],['showMeals','Essensplan'],['showNotes','Pinnwand'],['showCd','Countdowns'],['showMeds','Medikamente']];
+const WID = [['showTodo','To Do'],['showWeather','Wetter'],['showCalendar','Kalender & Geburtstage'],['showTrash','Müllabfuhr'],['showShop','Einkaufsliste'],['showMeals','Essensplan'],['showNotes','Pinnwand'],['showCd','Countdowns'],['showMeds','Medikamente']];
 const SYS = [['showFx','Wetter-Animation im Hintergrund'],['keepAwake','Bildschirm anlassen'],['dim','Nachts abdunkeln (22–6 Uhr)'],['light','Heller Modus']];
 const tgHTML = a => a.map(row => {
   const k = row[0], n = row[row.length - 1];
@@ -303,17 +305,22 @@ function sync() {
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', S.light ? '#eef0f8' : '#171a33');
   applyOrder();
   setFx(lastFx); wake(); dimUpd();
-  const w = JSON.stringify(S.geo || S.city), c = S.google + '|' + S.apple;
+  const w = JSON.stringify(S.geo || S.city), c = S.google + '|' + S.apple + '|' + (S.trashIcs || '');
   if (w !== pw) { pw = w; loadWeather(); }
-  if (c !== pc) { pc = c; loadCalendars(); }
+  if (c !== pc) { pc = c; loadCalendars(); loadTrashIcs(); }
 }
 function applyOrder() {
   const box = document.querySelector('.cards');
-  if (!box || !Array.isArray(S.order) || !S.order.length) return;
-  S.order.forEach(w => {
-    const el = box.querySelector(`[data-w="${w}"]`);
-    if (el) box.appendChild(el);
-  });
+  const main = $('main');
+  if (!Array.isArray(S.order) || !S.order.length) return;
+  // cards grid order
+  if (box) {
+    S.order.forEach(w => {
+      const el = box.querySelector(`:scope > [data-w="${w}"]`);
+      if (el) box.appendChild(el);
+    });
+  }
+  // optional: Todo left vs full width already via notodo class
 }
 document.addEventListener('click', e => { const b = e.target.closest('.tg'); if (b) setS({ [b.dataset.k]: !S[b.dataset.k] }); });
 async function wake() {
@@ -384,8 +391,8 @@ function start(user) {
   onValue(ref(db, 'meds'), s => { medD = s.val() || {}; renderMeds(); });
   onValue(ref(db, 'note'), s => { const n = $('note'); if (document.activeElement !== n) n.value = s.val() || ''; });
   onValue(ref(db, 'settings'), s => { S = { ...DEF, ...(s.val() || {}) }; jset('fd_set', S); sync(); });
-  setInterval(loadWeather, 300000); setInterval(loadCalendars, 300000);
-  document.addEventListener('visibilitychange', () => { wake(); if (!document.hidden) { loadWeather(); loadCalendars(); } });
+  setInterval(loadWeather, 300000); setInterval(loadCalendars, 300000); setInterval(loadTrashIcs, 300000);
+  document.addEventListener('visibilitychange', () => { wake(); if (!document.hidden) { loadWeather(); loadCalendars(); loadTrashIcs(); } });
 }
 
 /* ---------- Listen (Todo, Einkauf) ---------- */
@@ -408,14 +415,23 @@ $('shopAdd').onclick = () => addItems('shop', 'shopIn', 1); $('shopIn').addEvent
 const COL = { 'Restmüll': '#9aa0c9', 'Bio': '#3ee0b5', 'Gelber Sack': '#ffc94a', 'Papier': '#6ea8ff' };
 const addDays = (s, n) => { const d = new Date(s + 'T00:00'); d.setDate(d.getDate() + n); return iso(d); };
 function renderTrash() {
-  const it = Object.entries(trashD).sort((a, b) => (a[1].done - b[1].done) || a[1].date.localeCompare(b[1].date)), t0 = day0();
+  const t0 = day0();
   const dn = v => Math.round((new Date(v.date + 'T00:00') - t0) / 864e5);
-  alertT = it.filter(([, v]) => !v.done && dn(v) >= 0 && dn(v) <= 1).map(([, v]) => (dn(v) ? 'Morgen' : 'Heute') + ': ' + v.type).join(' · '); updAlert();
-  $('trash').innerHTML = it.length ? it.map(([k, v]) => {
+  const manual = Object.entries(trashD).map(([k, v]) => ({ k, ...v, auto: false }));
+  const auto = (icsTrash || []).filter(a => {
+    // skip if same type+date already manual
+    return !manual.some(m => m.type === a.type && m.date === a.date);
+  }).map((a, i) => ({ k: 'auto_' + i, ...a }));
+  const it = manual.concat(auto).sort((a, b) => (a.done - b.done) || a.date.localeCompare(b.date));
+  alertT = it.filter(v => !v.done && dn(v) >= 0 && dn(v) <= 1).map(v => (dn(v) ? 'Morgen' : 'Heute') + ': ' + v.type).join(' · '); updAlert();
+  $('trash').innerHTML = it.length ? it.map(v => {
     const n = dn(v), when = n === 0 ? 'Heute' : n === 1 ? 'Morgen' : n < 0 ? `vor ${-n} Tg.` : `in ${n} Tagen`;
     const dt = new Date(v.date + 'T00:00').toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' });
-    return `<div class="row ${v.done ? 'done' : ''}" style="--c:${COL[v.type] || '#8b7bff'}"><button class="chk" data-trash="${k}">${CHECK}</button><span class="t">${esc(v.type)}<br><span class="sub">${dt} · ${when}${v.every > 0 ? ' · wiederkehrend' : ''}</span></span><button class="x" data-rm="trash/${k}">✕</button></div>`;
-  }).join('') : '<div class="empty">Noch kein Termin eingetragen.</div>';
+    const chk = v.auto ? '' : `<button class="chk" data-trash="${v.k}">${CHECK}</button>`;
+    const rm = v.auto ? '' : `<button class="x" data-rm="trash/${v.k}">✕</button>`;
+    const tag = v.auto ? ' · auto' : (v.every > 0 ? ' · wiederkehrend' : '');
+    return `<div class="row ${v.done ? 'done' : ''}" style="--c:${COL[v.type] || '#8b7bff'}">${chk}<span class="t">${esc(v.type)}<br><span class="sub">${dt} · ${when}${tag}</span></span>${rm}</div>`;
+  }).join('') : '<div class="empty">Noch kein Termin – manuell oder ICS-Link in den Einstellungen.</div>';
 }
 function updAlert() { const t = [alertT && '🗑️ ' + alertT, alertB].filter(Boolean).join('  '); $('alert').textContent = t; $('alert').classList.toggle('hide', !t); }
 $('tAdd').onclick = () => { const date = $('tDate').value; if (date) push(ref(db, 'trash'), { type: $('tType').value, date, every: +$('tEvery').value, done: false }); };
@@ -601,7 +617,7 @@ function parseICS(txt, src, color, from, to) {
   }
   return out;
 }
-let icsEv = [];
+let icsEv = []; let icsTrash = [];
 async function loadCalendars() {
   const srcs = [['Google', S.google, '#8b7bff'], ['Apple', S.apple, '#ff9f43']].filter(s => s[1]);
   const from = day0(), to = new Date(+from + 28 * 864e5); let all = [], fail = 0, cached = 0, rep = [];
@@ -614,6 +630,44 @@ async function loadCalendars() {
   $('calState').textContent = !srcs.length ? '' : fail ? '⚠︎ teils offline' : cached ? '○ zwischengespeichert' : '● live';
   renderEvents();
 }
+async function loadTrashIcs() {
+  icsTrash = [];
+  const u = (S.trashIcs || '').trim();
+  if (!u) { renderTrash(); return; }
+  const key = 'fd_ics_Trash';
+  try {
+    const t = await fetchICS(u.replace(/^webcal:/i, 'https:'));
+    jset(key, { t, u });
+    const from = day0(), to = new Date(+from + 60 * 864e5);
+    const ev = parseICS(t, 'Müll', '#3ee0b5', from, to);
+    icsTrash = ev.map(e => {
+      let type = e.title || 'Restmüll';
+      const low = type.toLowerCase();
+      if (/bio|organic|grün/.test(low)) type = 'Bio';
+      else if (/gelb|wertstoff|verpack|plastic|sack/.test(low)) type = 'Gelber Sack';
+      else if (/papier|paper|blau|karton/.test(low)) type = 'Papier';
+      else if (/rest|hausmüll|restmüll|grau/.test(low)) type = 'Restmüll';
+      return { type, date: iso(e.dt), every: 0, done: false, auto: true };
+    });
+  } catch {
+    const k = jget(key, null);
+    if (k && k.u === u) {
+      const from = day0(), to = new Date(+from + 60 * 864e5);
+      const ev = parseICS(k.t, 'Müll', '#3ee0b5', from, to);
+      icsTrash = ev.map(e => {
+        let type = e.title || 'Restmüll';
+        const low = type.toLowerCase();
+        if (/bio|organic|grün/.test(low)) type = 'Bio';
+        else if (/gelb|wertstoff|verpack|plastic|sack/.test(low)) type = 'Gelber Sack';
+        else if (/papier|paper|blau|karton/.test(low)) type = 'Papier';
+        else if (/rest|hausmüll|restmüll|grau/.test(low)) type = 'Restmüll';
+        return { type, date: iso(e.dt), every: 0, done: false, auto: true };
+      });
+    }
+  }
+  renderTrash();
+}
+
 function bdays(from, to) {
   const out = [];
   for (const p of Object.values(people)) {
@@ -653,11 +707,11 @@ function showTab(t) {
   if (t === 'ort') { initMap(); setTimeout(() => { map.invalidateSize(); const g = S.geo; if (g) { map.setView([g.lat, g.lon], 10); mark(g.lat, g.lon); } }, 80); }
 }
 document.querySelectorAll('.tab').forEach(b => b.onclick = () => showTab(b.dataset.tab));
-function openSet(tab) { $('sCity').value = (S.geo && S.geo.name) || S.city || ''; $('sGoogle').value = S.google; $('sApple').value = S.apple; $('sug').classList.add('hide'); $('sMsg').textContent = ''; sync(); $('dlg').showModal(); showTab(tab || 'anz'); }
+function openSet(tab) { $('sCity').value = (S.geo && S.geo.name) || S.city || ''; $('sGoogle').value = S.google; $('sApple').value = S.apple; if ($('sTrashIcs')) $('sTrashIcs').value = S.trashIcs || ''; $('sug').classList.add('hide'); $('sMsg').textContent = ''; sync(); $('dlg').showModal(); showTab(tab || 'anz'); }
 $('setbtn').onclick = () => openSet(); $('city').onclick = () => openSet('ort'); $('sDone').onclick = () => { $('dlg').close(); stopLayoutEdit(); };
 $('refbtn').onclick = async () => {
   const b = $('refbtn'); b.classList.add('spinning');
-  try { await Promise.all([loadWeather(), loadCalendars()]); } finally { setTimeout(() => b.classList.remove('spinning'), 600); }
+  try { await Promise.all([loadWeather(), loadCalendars(), loadTrashIcs()]); } finally { setTimeout(() => b.classList.remove('spinning'), 600); }
 };
 document.getElementById('scaleBtns')?.addEventListener('click', e => {
   const btn = e.target.closest('[data-scale]'); if (!btn) return;
@@ -667,7 +721,7 @@ let layoutEdit = false;
 function stopLayoutEdit() {
   layoutEdit = false;
   document.querySelector('.cards')?.classList.remove('edit-layout');
-  const btn = $('layoutEditBtn'); if (btn) btn.textContent = 'Module verschieben (Drag & Drop)';
+  const btn = $('layoutEditBtn'); if (btn) btn.textContent = 'Module im Raster verschieben (Drag & Drop)';
 }
 $('layoutEditBtn').onclick = () => {
   layoutEdit = !layoutEdit;
@@ -715,7 +769,15 @@ $('layoutEditBtn').onclick = () => {
 $('dlg').addEventListener('click', e => { if (e.target === $('dlg')) $('dlg').close(); });
 $('sGoogle').addEventListener('change', () => setS({ google: $('sGoogle').value.trim() }));
 $('sApple').addEventListener('change', () => setS({ apple: $('sApple').value.trim() }));
-$('calTestBtn').onclick = async () => { await update(ref(db, 'settings'), { google: $('sGoogle').value.trim(), apple: $('sApple').value.trim() }).catch(() => {}); S.google = $('sGoogle').value.trim(); S.apple = $('sApple').value.trim(); $('calTest').textContent = 'Teste …'; loadCalendars(); };
+$('sTrashIcs').addEventListener('change', () => setS({ trashIcs: $('sTrashIcs').value.trim() }));
+$('calTestBtn').onclick = async () => {
+  const google = $('sGoogle').value.trim(), apple = $('sApple').value.trim(), trashIcs = $('sTrashIcs').value.trim();
+  await update(ref(db, 'settings'), { google, apple, trashIcs }).catch(() => {});
+  S.google = google; S.apple = apple; S.trashIcs = trashIcs;
+  $('calTest').textContent = 'Teste …';
+  await loadCalendars();
+  await loadTrashIcs();
+};
 
 let map, marker, sugList = [], sugT;
 function initMap() {
