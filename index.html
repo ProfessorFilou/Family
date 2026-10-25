@@ -33,12 +33,8 @@ body{font-size:calc(16px * var(--scale))}
 .card.edit-layout-card .size-btns{display:flex!important}
 .card.edit-layout-card{position:relative;outline:1px dashed #ffffff33;outline-offset:2px}
 .size-btns{display:none;position:absolute;top:8px;right:8px;gap:4px;z-index:5}
-.size-btns button{width:28px;height:28px;border-radius:8px;border:0;background:var(--card2);color:var(--txt);font-weight:900;font-size:12px;cursor:pointer;padding:0;line-height:1}
+.size-btns button{width:28px;height:28px;border-radius:8px;border:0;background:var(--card2);color:var(--txt);font-weight:900;font-size:11px;cursor:pointer;padding:0;line-height:1}
 .size-btns button.on{background:var(--violet);color:#fff}
-.card.size-sm{min-height:140px!important;grid-row:span 1}
-.card.size-md{min-height:230px}
-.card.size-lg{min-height:340px;grid-row:span 2}
-.card.size-xl{min-height:460px;grid-row:span 3}
 .scale-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
 .scale-row button{flex:1;min-width:56px}
 .med-form{display:grid;grid-template-columns:1fr 90px 48px;gap:6px;margin-bottom:6px}
@@ -72,20 +68,25 @@ header h1{font-size:26px;font-weight:900;letter-spacing:-.5px}
 #clock{display:inline-block;margin-top:4px;background:#ffffff12;border-radius:20px;padding:4px 12px;color:var(--mut);font-weight:700;font-size:13px}
 #alert{display:inline-block;margin:4px 0 0 6px;background:#ffc94a2a;color:var(--sun);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:900}
 .iconbtn{width:48px;height:48px;border-radius:50%;background:var(--card);border:1px solid #ffffff18;cursor:pointer;display:grid;place-items:center;font-size:21px}
-/* Layout: links Todo, rechts Wetter-Zeile + Widgets darunter */
-#main{display:grid;grid-template-columns:1fr;gap:14px}
-.right{display:flex;flex-direction:column;gap:14px;min-height:0;min-width:0}
-.cards{display:grid;grid-template-columns:1fr;gap:14px;min-height:0}
+/* Einheitliches Grid – alle Module verschieb- und skalierbar */
+#main{display:flex;flex-direction:column;gap:14px;min-height:0}
+.cards{display:grid;grid-template-columns:1fr;gap:14px;min-height:0;align-content:start}
 @media(min-width:700px){.cards{grid-template-columns:1fr 1fr}}
+@media(min-width:1100px){.cards{grid-template-columns:1fr 1fr 1fr}}
 @media(min-width:900px){
  body{height:100dvh;display:flex;flex-direction:column;overflow:hidden}
  #app{flex:1;min-height:0;display:flex;flex-direction:column}
- #main{flex:1;min-height:0;grid-template-columns:1fr 2fr}
- #main.notodo{grid-template-columns:1fr}
- .cards{flex:1;overflow-y:auto;grid-auto-rows:minmax(230px,1fr);padding:2px;margin:-2px;scrollbar-width:none}
- #cTodo{overflow-y:auto}.cards .card{overflow-y:auto}
- #cCalendar{grid-row:span 2}
+ #main{flex:1;min-height:0}
+ .cards{flex:1;overflow-y:auto;grid-auto-rows:minmax(200px,auto);padding:2px;margin:-2px;scrollbar-width:none}
+ .cards .card{overflow-y:auto;min-height:0}
 }
+.card.size-sm{min-height:120px;grid-row:span 1;grid-column:span 1}
+.card.size-md{min-height:200px;grid-row:span 1;grid-column:span 1}
+.card.size-lg{min-height:280px;grid-row:span 2;grid-column:span 1}
+.card.size-xl{min-height:280px;grid-row:span 2;grid-column:span 2}
+@media(max-width:699px){.card.size-xl{grid-column:span 1}}
+.card.size-wide{min-height:200px;grid-row:span 1;grid-column:span 2}
+@media(max-width:699px){.card.size-wide{grid-column:span 1}}
 .card{background:linear-gradient(160deg,#2b3164a0,#1f244790);backdrop-filter:blur(10px);border:1px solid #ffffff18;box-shadow:0 14px 36px #0005;border-radius:var(--r);padding:18px;position:relative;scrollbar-width:thin;scrollbar-color:#ffffff30 transparent;animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
 .card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--acc);z-index:1}
 .card::after{content:"";position:absolute;inset:0;background:radial-gradient(480px 280px at 85% 0,var(--wg,transparent),transparent 70%);pointer-events:none;border-radius:inherit;z-index:0;opacity:.85}
@@ -172,58 +173,56 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
     </div>
   </header>
   <main id="main">
-    <section class="card" id="cTodo" data-w="Todo" style="--acc:var(--violet)">
-      <h2><i style="background:#8b7bff33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12l5 5L20 6"/></svg></i>To Do <span class="sub"><button class="lnk" data-clr="todos">Erledigte löschen</button></span></h2>
-      <div class="prog"><div id="progBar"></div></div><div class="sub" id="progTxt" style="margin-bottom:10px;min-height:15px"></div>
-      <div class="add"><input id="todoIn" placeholder="Neue Aufgabe …"><button class="btn" id="todoAdd">+</button></div>
-      <div id="todos"></div>
-    </section>
-    <div class="right">
+    <div class="cards" id="board">
+      <section class="card" id="cTodo" data-w="Todo" style="--acc:var(--violet)">
+        <h2><i style="background:#8b7bff33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12l5 5L20 6"/></svg></i>To Do <span class="sub"><button class="lnk" data-clr="todos">Erledigte löschen</button></span></h2>
+        <div class="prog"><div id="progBar"></div></div><div class="sub" id="progTxt" style="margin-bottom:10px;min-height:15px"></div>
+        <div class="add"><input id="todoIn" placeholder="Neue Aufgabe …"><button class="btn" id="todoAdd">+</button></div>
+        <div id="todos"></div>
+      </section>
       <section class="card" id="cWeather" data-w="Weather" style="--acc:var(--sun)">
         <h2><i style="background:#ffc94a33"><svg width="22" height="22" viewBox="0 0 64 64"><use href="#sunI"/></svg></i>Wetter <span class="sub"><button class="lnk" id="city"></button></span></h2>
         <div id="weather"><div class="empty">Lade …</div></div>
       </section>
-      <div class="cards">
-        <section class="card" id="cCalendar" data-w="Calendar" style="--acc:var(--coral)">
-          <h2><i style="background:#ff7a8a33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></i>Kalender <span class="sub" id="calState"></span></h2>
-          <div class="evadd"><input id="evT" placeholder="Eigener Termin …"><input id="evD" type="date"><input id="evH" type="time"><button class="btn" id="evAdd">+</button></div>
-          <div id="events"></div>
-        </section>
-        <section class="card" data-w="Trash" style="--acc:var(--mint)">
-          <h2><i style="background:#3ee0b533"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></i>Müllabfuhr</h2>
-          <div class="g3"><select id="tType"><option>Restmüll</option><option>Bio</option><option>Gelber Sack</option><option>Papier</option></select><input id="tDate" type="date"><select id="tEvery"><option value="0">einmalig</option><option value="7">jede Woche</option><option value="14">alle 2 Wochen</option><option value="28">alle 4 Wochen</option></select></div>
-          <button class="btn g full" id="tAdd" style="margin-bottom:10px">Termin hinzufügen</button>
-          <div id="trash"></div>
-        </section>
-        <section class="card" data-w="Shop" style="--acc:#ff9f43">
-          <h2><i style="background:#ff9f4333"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.5 11h11l2-7H7"/></svg></i>Einkauf <span class="sub"><button class="lnk" data-clr="shop">Erledigte löschen</button></span></h2>
-          <div class="add"><input id="shopIn" placeholder="Milch, Eier, Brot …"><button class="btn" id="shopAdd">+</button></div>
-          <div id="shop"></div>
-        </section>
-        <section class="card" data-w="Meals" style="--acc:#5fa8ff">
-          <h2><i style="background:#5fa8ff33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 4v7a3 3 0 006 0V4M7 4v16M16 4v16M16 4a3 3 0 013 3v3h-3"/></svg></i>Essensplan</h2><div id="meals"></div>
-        </section>
-        <section class="card" data-w="Notes" style="--acc:var(--sun)">
-          <h2><i style="background:#ffc94a33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 17v5M9 3l1 7H6l6 8 6-8h-4l1-7z"/></svg></i>Pinnwand</h2>
-          <textarea id="note" placeholder="Zettel für die Familie …"></textarea>
-        </section>
-        <section class="card" data-w="Meds" style="--acc:#ff6b9d">
-          <h2><i style="background:#ff6b9d33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="8" width="18" height="8" rx="4"/><path d="M12 8v8M8 12h8"/></svg></i>Medikamente</h2>
-          <div class="med-form"><input id="medN" placeholder="Name …"><input id="medT" type="time"><button class="btn" id="medAdd">+</button></div>
-          <div class="med-extra">
-            <input id="medD" placeholder="Dosis (z. B. 1 Tablette)">
-            <select id="medF"><option value="daily">täglich</option><option value="2">alle 2 Tage</option><option value="3">alle 3 Tage</option><option value="7">1× pro Woche</option><option value="asneeded">bei Bedarf</option></select>
-          </div>
-          <input id="medNote" placeholder="Notiz (optional)" style="margin-bottom:10px">
-          <input type="hidden" id="medEditId" value="">
-          <div id="meds"></div>
-        </section>
-        <section class="card" data-w="Cd" style="--acc:#c08bff">
-          <h2><i style="background:#c08bff33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></i>Countdowns</h2>
-          <div class="pad" style="margin-bottom:10px"><input id="cdN" placeholder="Urlaub, Geburtstag …"><input id="cdD" type="date"><button class="btn" id="cdAdd">+</button></div>
-          <div id="cds"></div>
-        </section>
-      </div>
+      <section class="card" id="cCalendar" data-w="Calendar" style="--acc:var(--coral)">
+        <h2><i style="background:#ff7a8a33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></i>Kalender <span class="sub" id="calState"></span></h2>
+        <div class="evadd"><input id="evT" placeholder="Eigener Termin …"><input id="evD" type="date"><input id="evH" type="time"><button class="btn" id="evAdd">+</button></div>
+        <div id="events"></div>
+      </section>
+      <section class="card" data-w="Trash" style="--acc:var(--mint)">
+        <h2><i style="background:#3ee0b533"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></i>Müllabfuhr</h2>
+        <div class="g3"><select id="tType"><option>Restmüll</option><option>Bio</option><option>Gelber Sack</option><option>Papier</option></select><input id="tDate" type="date"><select id="tEvery"><option value="0">einmalig</option><option value="7">jede Woche</option><option value="14">alle 2 Wochen</option><option value="28">alle 4 Wochen</option></select></div>
+        <button class="btn g full" id="tAdd" style="margin-bottom:10px">Termin hinzufügen</button>
+        <div id="trash"></div>
+      </section>
+      <section class="card" data-w="Shop" style="--acc:#ff9f43">
+        <h2><i style="background:#ff9f4333"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.5 11h11l2-7H7"/></svg></i>Einkauf <span class="sub"><button class="lnk" data-clr="shop">Erledigte löschen</button></span></h2>
+        <div class="add"><input id="shopIn" placeholder="Milch, Eier, Brot …"><button class="btn" id="shopAdd">+</button></div>
+        <div id="shop"></div>
+      </section>
+      <section class="card" data-w="Meals" style="--acc:#5fa8ff">
+        <h2><i style="background:#5fa8ff33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 4v7a3 3 0 006 0V4M7 4v16M16 4v16M16 4a3 3 0 013 3v3h-3"/></svg></i>Essensplan</h2><div id="meals"></div>
+      </section>
+      <section class="card" data-w="Notes" style="--acc:var(--sun)">
+        <h2><i style="background:#ffc94a33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 17v5M9 3l1 7H6l6 8 6-8h-4l1-7z"/></svg></i>Pinnwand</h2>
+        <textarea id="note" placeholder="Zettel für die Familie …"></textarea>
+      </section>
+      <section class="card" data-w="Meds" style="--acc:#ff6b9d">
+        <h2><i style="background:#ff6b9d33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="8" width="18" height="8" rx="4"/><path d="M12 8v8M8 12h8"/></svg></i>Medikamente</h2>
+        <div class="med-form"><input id="medN" placeholder="Name …"><input id="medT" type="time"><button class="btn" id="medAdd">+</button></div>
+        <div class="med-extra">
+          <input id="medD" placeholder="Dosis (z. B. 1 Tablette)">
+          <select id="medF"><option value="daily">täglich</option><option value="2">alle 2 Tage</option><option value="3">alle 3 Tage</option><option value="7">1× pro Woche</option><option value="asneeded">bei Bedarf</option></select>
+        </div>
+        <input id="medNote" placeholder="Notiz (optional)" style="margin-bottom:10px">
+        <input type="hidden" id="medEditId" value="">
+        <div id="meds"></div>
+      </section>
+      <section class="card" data-w="Cd" style="--acc:#c08bff">
+        <h2><i style="background:#c08bff33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></i>Countdowns</h2>
+        <div class="pad" style="margin-bottom:10px"><input id="cdN" placeholder="Urlaub, Geburtstag …"><input id="cdD" type="date"><button class="btn" id="cdAdd">+</button></div>
+        <div id="cds"></div>
+      </section>
     </div>
   </main>
 </div>
@@ -244,7 +243,7 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
     </div>
     <div class="sec">Layout</div>
     <button type="button" class="btn g full" id="layoutEditBtn">Module verschieben & Größe ändern</button>
-    <p class="sub" style="margin-top:8px">Im Bearbeitungsmodus: Karten ziehen zum Umsortieren. Mit S / M / L / XL die Größe ändern (wie Fenster). Änderungen gelten für alle Geräte.</p>
+    <p class="sub" style="margin-top:8px">Alle Module (auch To Do & Wetter): ziehen zum Umsortieren. Größen: S · M · L · XL · ↔ (breit). Änderungen gelten für alle Geräte.</p>
   </div>
 
   <div class="pane" id="p-ort">
@@ -330,7 +329,6 @@ function setS(p) {
 }
 function sync() {
   document.querySelectorAll('[data-w]').forEach(el => el.classList.toggle('hide', !S['show' + el.dataset.w]));
-  $('main').classList.toggle('notodo', !S.showTodo);
   document.querySelectorAll('.tg').forEach(b => b.setAttribute('aria-checked', !!S[b.dataset.k]));
   document.documentElement.classList.toggle('light', !!S.light);
   document.documentElement.style.setProperty('--scale', S.scale || 1);
@@ -341,26 +339,27 @@ function sync() {
   if (w !== pw) { pw = w; loadWeather(); }
   if (c !== pc) { pc = c; loadCalendars(); loadTrashIcs(); }
 }
+const SIZE_OPTS = ['sm','md','lg','xl','wide'];
+const SIZE_LABEL = { sm:'S', md:'M', lg:'L', xl:'XL', wide:'↔' };
 function applyOrder() {
-  const box = document.querySelector('.cards');
+  const box = document.getElementById('board') || document.querySelector('.cards');
   if (box && Array.isArray(S.order) && S.order.length) {
     S.order.forEach(w => {
       const el = box.querySelector(`:scope > [data-w="${w}"]`);
       if (el) box.appendChild(el);
     });
   }
-  // Größen auf alle Karten anwenden (auch Todo/Weather)
-  document.querySelectorAll('[data-w]').forEach(el => {
+  document.querySelectorAll('#board > [data-w], .cards > [data-w]').forEach(el => {
     const w = el.dataset.w;
-    const sz = (S.sizes && S.sizes[w]) || 'md';
-    el.classList.remove('size-sm', 'size-md', 'size-lg', 'size-xl');
+    // Defaults: Wetter breit, Kalender groß
+    let sz = (S.sizes && S.sizes[w]) || (w === 'Weather' ? 'wide' : w === 'Calendar' ? 'lg' : 'md');
+    el.classList.remove('size-sm', 'size-md', 'size-lg', 'size-xl', 'size-wide');
     el.classList.add('size-' + sz);
-    // Größen-Buttons im Edit-Modus
     let btns = el.querySelector('.size-btns');
     if (!btns) {
       btns = document.createElement('div');
       btns.className = 'size-btns';
-      btns.innerHTML = ['sm','md','lg','xl'].map(s => `<button type="button" data-sz="${s}" data-for="${w}">${s.toUpperCase()}</button>`).join('');
+      btns.innerHTML = SIZE_OPTS.map(s => `<button type="button" data-sz="${s}" data-for="${w}" title="${s}">${SIZE_LABEL[s]}</button>`).join('');
       el.appendChild(btns);
     }
     btns.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.sz === sz));
@@ -883,30 +882,38 @@ document.getElementById('scaleBtns')?.addEventListener('click', e => {
   setS({ scale: +btn.dataset.scale });
 });
 let layoutEdit = false;
+function getBoard() { return document.getElementById('board') || document.querySelector('.cards'); }
 function stopLayoutEdit() {
   layoutEdit = false;
-  document.querySelector('.cards')?.classList.remove('edit-layout');
+  const box = getBoard();
+  box?.classList.remove('edit-layout');
+  box?.querySelectorAll('.card').forEach(c => { c.draggable = false; c.classList.remove('edit-layout-card', 'dragging', 'drag-over'); });
   const btn = $('layoutEditBtn'); if (btn) btn.textContent = 'Module verschieben & Größe ändern';
 }
 $('layoutEditBtn').onclick = () => {
   layoutEdit = !layoutEdit;
-  const box = document.querySelector('.cards');
+  const box = getBoard();
   box?.classList.toggle('edit-layout', layoutEdit);
-  // auch Todo/Weather editierbar machen (Größen-Buttons)
-  document.querySelectorAll('[data-w]').forEach(c => c.classList.toggle('edit-layout-card', layoutEdit));
+  box?.querySelectorAll('.card').forEach(c => {
+    c.draggable = layoutEdit;
+    c.classList.toggle('edit-layout-card', layoutEdit);
+  });
   $('layoutEditBtn').textContent = layoutEdit ? 'Fertig – Layout speichern' : 'Module verschieben & Größe ändern';
-  if (!layoutEdit) {
-    const order = [...(box?.querySelectorAll('[data-w]') || [])].map(el => el.dataset.w);
+  if (!layoutEdit && box) {
+    const order = [...box.querySelectorAll(':scope > [data-w]')].map(el => el.dataset.w);
     setS({ order });
   }
 };
 (function initDrag() {
-  const box = document.querySelector('.cards'); if (!box) return;
+  const box = getBoard(); if (!box) return;
   let dragEl = null;
   box.addEventListener('dragstart', e => {
     if (!layoutEdit) return;
-    const c = e.target.closest('.card'); if (!c) return;
+    const c = e.target.closest('.card'); if (!c || !box.contains(c)) return;
+    // nicht von Inputs/Buttons starten
+    if (e.target.closest('input,textarea,select,button,a')) { e.preventDefault(); return; }
     dragEl = c; c.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', c.dataset.w || ''); } catch {}
   });
   box.addEventListener('dragend', e => {
     const c = e.target.closest('.card'); if (c) c.classList.remove('dragging');
@@ -918,20 +925,19 @@ $('layoutEditBtn').onclick = () => {
     e.preventDefault();
     const c = e.target.closest('.card');
     box.querySelectorAll('.drag-over').forEach(x => x.classList.remove('drag-over'));
-    if (c && c !== dragEl) c.classList.add('drag-over');
+    if (c && c !== dragEl && box.contains(c)) c.classList.add('drag-over');
   });
   box.addEventListener('drop', e => {
     if (!layoutEdit || !dragEl) return;
     e.preventDefault();
     const c = e.target.closest('.card');
     box.querySelectorAll('.drag-over').forEach(x => x.classList.remove('drag-over'));
-    if (c && c !== dragEl) {
-      const cards = [...box.children];
+    if (c && c !== dragEl && box.contains(c)) {
+      const cards = [...box.querySelectorAll(':scope > .card')];
       const i = cards.indexOf(c), j = cards.indexOf(dragEl);
       if (j < i) c.after(dragEl); else c.before(dragEl);
     }
   });
-  box.querySelectorAll('.card').forEach(c => { c.draggable = true; });
 })();
 $('dlg').addEventListener('click', e => { if (e.target === $('dlg')) $('dlg').close(); });
 $('sGoogle').addEventListener('change', () => setS({ google: $('sGoogle').value.trim() }));
