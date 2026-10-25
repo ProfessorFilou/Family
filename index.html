@@ -15,7 +15,7 @@
 :root{--bg:#171a33;--card:#232849;--card2:#2c3260;--txt:#f2f3ff;--mut:#9aa0c9;--violet:#8b7bff;--mint:#3ee0b5;--coral:#ff7a8a;--sun:#ffc94a;--r:26px;--scale:1}
 html.light{--bg:#eef0f8;--card:#ffffff;--card2:#e8eaf4;--txt:#1a1d33;--mut:#5a6080}
 html.light body{background:var(--bg)}
-html.light .card{background:linear-gradient(160deg,#ffffffee,#f4f5fccc);border-color:#00000012;box-shadow:0 10px 28px #0001}
+html.light .card{background:linear-gradient(160deg,#ffffffc8,#f4f5fca0);border-color:#00000012;box-shadow:0 10px 28px #0001;backdrop-filter:blur(10px)}
 html.light .lbox{background:linear-gradient(160deg,#fff,#eef0f8);border-color:#00000012;color:var(--txt)}
 html.light dialog{background:linear-gradient(160deg,#fff,#eef0f8);color:var(--txt)}
 html.light .btn.g{background:var(--card2)}
@@ -27,10 +27,26 @@ body{font-size:calc(16px * var(--scale))}
 .iconbtn.spinning svg{animation:spin .8s linear infinite}
 .card.dragging{opacity:.55;transform:scale(.98)}
 .card.drag-over{outline:2px dashed var(--violet);outline-offset:2px}
-.cards.edit-layout .card{cursor:grab}
+.cards.edit-layout .card{cursor:grab;position:relative}
 .cards.edit-layout .card:active{cursor:grabbing}
+.cards.edit-layout .card .size-btns,
+.card.edit-layout-card .size-btns{display:flex!important}
+.card.edit-layout-card{position:relative;outline:1px dashed #ffffff33;outline-offset:2px}
+.size-btns{display:none;position:absolute;top:8px;right:8px;gap:4px;z-index:5}
+.size-btns button{width:28px;height:28px;border-radius:8px;border:0;background:var(--card2);color:var(--txt);font-weight:900;font-size:12px;cursor:pointer;padding:0;line-height:1}
+.size-btns button.on{background:var(--violet);color:#fff}
+.card.size-sm{min-height:140px!important;grid-row:span 1}
+.card.size-md{min-height:230px}
+.card.size-lg{min-height:340px;grid-row:span 2}
+.card.size-xl{min-height:460px;grid-row:span 3}
 .scale-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
 .scale-row button{flex:1;min-width:56px}
+.med-form{display:grid;grid-template-columns:1fr 90px 48px;gap:6px;margin-bottom:6px}
+.med-form *{margin:0}
+.med-extra{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.med-extra *{margin:0}
+.med-edit{border-left:3px solid var(--violet)}
+.row .edit{background:none;border:0;color:var(--mut);cursor:pointer;font-size:15px;padding:4px 6px}
 
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
 body{font-family:Nunito,system-ui,sans-serif;background:var(--bg);color:var(--txt);padding:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));overflow-x:hidden}
@@ -70,9 +86,10 @@ header h1{font-size:26px;font-weight:900;letter-spacing:-.5px}
  #cTodo{overflow-y:auto}.cards .card{overflow-y:auto}
  #cCalendar{grid-row:span 2}
 }
-.card{background:linear-gradient(160deg,#2b3164c8,#1f2447b8);backdrop-filter:blur(14px);border:1px solid #ffffff18;box-shadow:0 14px 36px #0005;border-radius:var(--r);padding:18px;position:relative;scrollbar-width:thin;scrollbar-color:#ffffff30 transparent;animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
-.card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--acc)}
-.card::after{content:"";position:absolute;inset:0;background:radial-gradient(420px 240px at 85% 0,var(--wg,transparent),transparent);pointer-events:none}
+.card{background:linear-gradient(160deg,#2b3164a0,#1f244790);backdrop-filter:blur(10px);border:1px solid #ffffff18;box-shadow:0 14px 36px #0005;border-radius:var(--r);padding:18px;position:relative;scrollbar-width:thin;scrollbar-color:#ffffff30 transparent;animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+.card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--acc);z-index:1}
+.card::after{content:"";position:absolute;inset:0;background:radial-gradient(480px 280px at 85% 0,var(--wg,transparent),transparent 70%);pointer-events:none;border-radius:inherit;z-index:0;opacity:.85}
+.card > *{position:relative;z-index:1}
 .card h2{font-size:17px;font-weight:900;display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .card h2 i{width:36px;height:36px;border-radius:13px;display:grid;place-items:center;font-style:normal;flex:none;font-size:18px}
 .card h2 .sub{margin-left:auto}
@@ -192,8 +209,13 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
         </section>
         <section class="card" data-w="Meds" style="--acc:#ff6b9d">
           <h2><i style="background:#ff6b9d33"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="8" width="18" height="8" rx="4"/><path d="M12 8v8M8 12h8"/></svg></i>Medikamente</h2>
-          <div class="pad" style="margin-bottom:10px;grid-template-columns:1fr 90px 48px"><input id="medN" placeholder="Name …"><input id="medT" type="time"><button class="btn" id="medAdd">+</button></div>
-          <input id="medD" placeholder="Dosis (optional)" style="margin-bottom:10px">
+          <div class="med-form"><input id="medN" placeholder="Name …"><input id="medT" type="time"><button class="btn" id="medAdd">+</button></div>
+          <div class="med-extra">
+            <input id="medD" placeholder="Dosis (z. B. 1 Tablette)">
+            <select id="medF"><option value="daily">täglich</option><option value="2">alle 2 Tage</option><option value="3">alle 3 Tage</option><option value="7">1× pro Woche</option><option value="asneeded">bei Bedarf</option></select>
+          </div>
+          <input id="medNote" placeholder="Notiz (optional)" style="margin-bottom:10px">
+          <input type="hidden" id="medEditId" value="">
           <div id="meds"></div>
         </section>
         <section class="card" data-w="Cd" style="--acc:#c08bff">
@@ -221,8 +243,8 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
       <button type="button" class="btn g" data-scale="1.3">XL</button>
     </div>
     <div class="sec">Layout</div>
-    <button type="button" class="btn g full" id="layoutEditBtn">Module im Raster verschieben (Drag & Drop)</button>
-    <p class="sub" style="margin-top:8px">Änderungen gelten sofort und für alle Geräte der Familie.</p>
+    <button type="button" class="btn g full" id="layoutEditBtn">Module verschieben & Größe ändern</button>
+    <p class="sub" style="margin-top:8px">Im Bearbeitungsmodus: Karten ziehen zum Umsortieren. Mit S / M / L / XL die Größe ändern (wie Fenster). Änderungen gelten für alle Geräte.</p>
   </div>
 
   <div class="pane" id="p-ort">
@@ -244,6 +266,9 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
   </div>
 
   <div class="pane" id="p-fam">
+    <div class="sec">Anzeigename (Begrüßung)</div>
+    <label>Wie soll die Begrüßung heißen? (z. B. Familie, Mama, Papa …)</label>
+    <input id="sName" placeholder="Familie" maxlength="40" style="margin-bottom:14px">
     <div class="sec">Geburtstage (erscheinen im Kalender)</div>
     <div id="people"></div>
     <div class="pad"><input id="pName" placeholder="Name"><input id="pDate" type="date"><button class="btn" id="pAdd">+</button></div>
@@ -286,8 +311,10 @@ const day0 = () => new Date(new Date().toDateString());
 
 /* ---------- Einstellungen (sofort wirksam, lokal + Firebase) ---------- */
 const DEF = { showTodo: true, showWeather: true, showCalendar: true, showTrash: true, showShop: true, showMeals: false, showNotes: false, showCd: false, showMeds: false,
-  showFx: true, keepAwake: false, dim: false, light: false, scale: 1, order: [], city: 'München', geo: null, google: '', apple: '', trashIcs: '' };
+  showFx: true, keepAwake: false, dim: false, light: false, scale: 1, order: [], sizes: {}, displayName: '', city: 'München', geo: null, google: '', apple: '', trashIcs: '' };
 let S = { ...DEF, ...jget('fd_set', {}) };
+if (!S.sizes || typeof S.sizes !== 'object') S.sizes = {};
+let greetName = 'Familie';
 const WID = [['showTodo','To Do'],['showWeather','Wetter'],['showCalendar','Kalender & Geburtstage'],['showTrash','Müllabfuhr'],['showShop','Einkaufsliste'],['showMeals','Essensplan'],['showNotes','Pinnwand'],['showCd','Countdowns'],['showMeds','Medikamente']];
 const SYS = [['showFx','Wetter-Animation im Hintergrund'],['keepAwake','Bildschirm anlassen'],['dim','Nachts abdunkeln (22–6 Uhr)'],['light','Heller Modus']];
 const tgHTML = a => a.map(row => {
@@ -316,13 +343,28 @@ function sync() {
 }
 function applyOrder() {
   const box = document.querySelector('.cards');
-  if (!Array.isArray(S.order) || !S.order.length) return;
-  if (box) {
+  if (box && Array.isArray(S.order) && S.order.length) {
     S.order.forEach(w => {
       const el = box.querySelector(`:scope > [data-w="${w}"]`);
       if (el) box.appendChild(el);
     });
   }
+  // Größen auf alle Karten anwenden (auch Todo/Weather)
+  document.querySelectorAll('[data-w]').forEach(el => {
+    const w = el.dataset.w;
+    const sz = (S.sizes && S.sizes[w]) || 'md';
+    el.classList.remove('size-sm', 'size-md', 'size-lg', 'size-xl');
+    el.classList.add('size-' + sz);
+    // Größen-Buttons im Edit-Modus
+    let btns = el.querySelector('.size-btns');
+    if (!btns) {
+      btns = document.createElement('div');
+      btns.className = 'size-btns';
+      btns.innerHTML = ['sm','md','lg','xl'].map(s => `<button type="button" data-sz="${s}" data-for="${w}">${s.toUpperCase()}</button>`).join('');
+      el.appendChild(btns);
+    }
+    btns.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.sz === sz));
+  });
 }
 document.addEventListener('click', e => { const b = e.target.closest('.tg'); if (b) setS({ [b.dataset.k]: !S[b.dataset.k] }); });
 async function wake() {
@@ -358,7 +400,8 @@ function isAllowed(user) {
 onAuthStateChanged(auth, async (user) => {
   if (user && isAllowed(user)) {
     currentUser = user;
-    start(user.email.split('@')[0] || 'Familie');
+    greetName = (S.displayName && S.displayName.trim()) || user.email.split('@')[0] || 'Familie';
+    start(greetName);
   } else {
     if (user && !isAllowed(user)) {
       await signOut(auth);
@@ -433,10 +476,12 @@ function start(user) {
   $('app').classList.remove('hide');
   if (started) return;
   started = true;
+  greetName = user || greetName;
   let last = '';
   const tick = () => {
     const h = new Date().getHours();
-    $('hello').textContent = (h < 11 ? 'Guten Morgen' : h < 18 ? 'Hallo' : 'Guten Abend') + ', ' + user;
+    const name = (S.displayName && S.displayName.trim()) || greetName || 'Familie';
+    $('hello').textContent = (h < 11 ? 'Guten Morgen' : h < 18 ? 'Hallo' : 'Guten Abend') + ', ' + name;
     $('clock').textContent = new Date().toLocaleString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
     const ds = new Date().toDateString();
     if (ds !== last) { last = ds; renderTrash(); renderEvents(); renderCd(); renderMeals(); renderMeds(); }
@@ -515,21 +560,41 @@ function renderCd() {
 }
 $('cdAdd').onclick = () => { const name = $('cdN').value.trim(), date = $('cdD').value; if (name && date) { push(ref(db, 'countdowns'), { name, date }); $('cdN').value = ''; } };
 
+const FREQ_L = { daily: 'täglich', '2': 'alle 2 Tage', '3': 'alle 3 Tage', '7': '1× / Woche', asneeded: 'bei Bedarf' };
+function clearMedForm() {
+  $('medN').value = ''; $('medT').value = ''; $('medD').value = ''; $('medNote').value = '';
+  $('medF').value = 'daily'; $('medEditId').value = '';
+  $('medAdd').textContent = '+';
+  document.querySelector('.med-form')?.classList.remove('med-edit');
+}
 function renderMeds() {
   const today = iso(day0());
   const it = Object.entries(medD).sort((a, b) => (a[1].time || '').localeCompare(b[1].time || '') || a[1].name.localeCompare(b[1].name));
   $('meds').innerHTML = it.length ? it.map(([k, v]) => {
     const done = v.doneDate === today;
-    const dose = v.dose ? `<br><span class="sub">${esc(v.dose)}</span>` : '';
-    const tm = v.time ? v.time : '–';
-    return `<div class="row ${done ? 'done' : ''}" style="--c:#ff6b9d"><button class="chk" data-med="${k}">${CHECK}</button><span class="t">${esc(v.name)}${dose}<br><span class="sub">${tm} Uhr</span></span><button class="x" data-rm="meds/${k}">✕</button></div>`;
+    const dose = v.dose ? ` · ${esc(v.dose)}` : '';
+    const note = v.note ? `<br><span class="sub">${esc(v.note)}</span>` : '';
+    const freq = FREQ_L[v.freq] || 'täglich';
+    const tm = v.time ? v.time + ' Uhr' : '–';
+    return `<div class="row ${done ? 'done' : ''}" style="--c:#ff6b9d">
+      <button class="chk" data-med="${k}">${CHECK}</button>
+      <span class="t">${esc(v.name)}${dose}<br><span class="sub">${tm} · ${freq}</span>${note}</span>
+      <button class="edit" data-mededit="${k}" title="Bearbeiten">✎</button>
+      <button class="x" data-rm="meds/${k}">✕</button>
+    </div>`;
   }).join('') : '<div class="empty">Keine Medikamente eingetragen.</div>';
 }
 $('medAdd').onclick = () => {
   const name = $('medN').value.trim(), time = $('medT').value, dose = $('medD').value.trim();
+  const note = $('medNote').value.trim(), freq = $('medF').value, editId = $('medEditId').value;
   if (!name) return;
-  push(ref(db, 'meds'), { name, time: time || '', dose: dose || '', doneDate: '' });
-  $('medN').value = ''; $('medD').value = '';
+  const data = { name, time: time || '', dose: dose || '', note: note || '', freq: freq || 'daily', doneDate: editId && medD[editId] ? (medD[editId].doneDate || '') : '' };
+  if (editId && medD[editId]) {
+    update(ref(db, 'meds/' + editId), data);
+  } else {
+    push(ref(db, 'meds'), data);
+  }
+  clearMedForm();
 };
 
 /* ---------- Klicks ---------- */
@@ -540,6 +605,23 @@ document.addEventListener('click', async e => {
     const today = iso(day0());
     const v = medD[D.med];
     update(ref(db, 'meds/' + D.med), { doneDate: v && v.doneDate === today ? '' : today });
+  }
+  if (D.mededit) {
+    const v = medD[D.mededit]; if (!v) return;
+    $('medN').value = v.name || '';
+    $('medT').value = v.time || '';
+    $('medD').value = v.dose || '';
+    $('medNote').value = v.note || '';
+    $('medF').value = v.freq || 'daily';
+    $('medEditId').value = D.mededit;
+    $('medAdd').textContent = '✓';
+    document.querySelector('.med-form')?.classList.add('med-edit');
+    $('medN').focus();
+  }
+  if (D.sz && D.for) {
+    const sizes = { ...(S.sizes || {}) };
+    sizes[D.for] = D.sz;
+    setS({ sizes });
   }
   if (D.rm) remove(ref(db, D.rm));
   if (D.clr) Object.entries(D.clr === 'todos' ? todoD : shopD).forEach(([k, v]) => v.done && remove(ref(db, D.clr + '/' + k)));
@@ -572,11 +654,11 @@ function setFx(k) { lastFx = k; if (!S.showFx) k = ''; if (k === fxKind) return;
 function loop() {
   cx.clearRect(0, 0, W, H);
   for (const p of P) {
-    if (fxKind === 'rain') { cx.strokeStyle = `rgba(150,190,255,${.25 + p.z * .4})`; cx.lineWidth = 1 + p.z; cx.beginPath(); cx.moveTo(p.x, p.y); cx.lineTo(p.x - 2, p.y + 10 + p.z * 14); cx.stroke(); p.y += 9 + p.z * 12; p.x -= 1; if (p.y > H) { p.y = -20; p.x = Math.random() * W; } }
-    else if (fxKind === 'snow') { p.t += .02; p.x += Math.sin(p.t) * .5; p.y += .6 + p.z * 1.4; cx.fillStyle = `rgba(255,255,255,${.4 + p.z * .5})`; cx.beginPath(); cx.arc(p.x, p.y, 1.5 + p.z * 2.5, 0, 6.3); cx.fill(); if (p.y > H) { p.y = -5; p.x = Math.random() * W; } }
-    else if (fxKind === 'stars') { p.t += .03; cx.fillStyle = `rgba(255,245,210,${.25 + .65 * Math.abs(Math.sin(p.t))})`; cx.beginPath(); cx.arc(p.x, p.y, .6 + p.z * 1.5, 0, 6.3); cx.fill(); }
-    else if (fxKind === 'dust') { p.t += .01; p.x += Math.sin(p.t) * .3; p.y -= .2 + p.z * .3; cx.fillStyle = `rgba(255,210,110,${.2 + p.z * .3})`; cx.beginPath(); cx.arc(p.x, p.y, 1 + p.z * 2.5, 0, 6.3); cx.fill(); if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; } }
-    else if (fxKind === 'fog') { const r = 130 + p.z * 150; p.x += .15 + p.z * .25; if (p.x > W + r) p.x = -r; const g = cx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r); g.addColorStop(0, 'rgba(190,200,255,.13)'); g.addColorStop(1, 'rgba(190,200,255,0)'); cx.fillStyle = g; cx.fillRect(p.x - r, p.y - r, r * 2, r * 2); }
+    if (fxKind === 'rain') { cx.strokeStyle = `rgba(160,200,255,${.35 + p.z * .45})`; cx.lineWidth = 1.2 + p.z; cx.beginPath(); cx.moveTo(p.x, p.y); cx.lineTo(p.x - 2, p.y + 10 + p.z * 14); cx.stroke(); p.y += 9 + p.z * 12; p.x -= 1; if (p.y > H) { p.y = -20; p.x = Math.random() * W; } }
+    else if (fxKind === 'snow') { p.t += .02; p.x += Math.sin(p.t) * .5; p.y += .6 + p.z * 1.4; cx.fillStyle = `rgba(255,255,255,${.5 + p.z * .5})`; cx.beginPath(); cx.arc(p.x, p.y, 1.5 + p.z * 2.5, 0, 6.3); cx.fill(); if (p.y > H) { p.y = -5; p.x = Math.random() * W; } }
+    else if (fxKind === 'stars') { p.t += .03; cx.fillStyle = `rgba(255,245,210,${.3 + .7 * Math.abs(Math.sin(p.t))})`; cx.beginPath(); cx.arc(p.x, p.y, .6 + p.z * 1.5, 0, 6.3); cx.fill(); }
+    else if (fxKind === 'dust') { p.t += .01; p.x += Math.sin(p.t) * .3; p.y -= .2 + p.z * .3; cx.fillStyle = `rgba(255,210,110,${.28 + p.z * .35})`; cx.beginPath(); cx.arc(p.x, p.y, 1 + p.z * 2.5, 0, 6.3); cx.fill(); if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; } }
+    else if (fxKind === 'fog') { const r = 130 + p.z * 150; p.x += .15 + p.z * .25; if (p.x > W + r) p.x = -r; const g = cx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r); g.addColorStop(0, 'rgba(190,200,255,.16)'); g.addColorStop(1, 'rgba(190,200,255,0)'); cx.fillStyle = g; cx.fillRect(p.x - r, p.y - r, r * 2, r * 2); }
   }
   requestAnimationFrame(loop);
 }
@@ -591,7 +673,16 @@ async function loadWeather() {
     if (!g) { const r = geoMemo || (await geocode(S.city || 'München'))[0]; if (!r) { $('weather').innerHTML = '<div class="empty">Ort nicht gefunden.</div>'; return; } geoMemo = r; g = { name: r.name, lat: r.latitude, lon: r.longitude }; }
     const w = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${g.lat}&longitude=${g.lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&forecast_days=6&timezone=auto`)).json();
     const c = w.current, d = w.daily, hh = w.hourly, code = c.weather_code;
-    $('cWeather').style.setProperty('--wg', !c.is_day ? '#5a4aff55' : code <= 2 ? '#ffb84a55' : code >= 51 ? '#4a7bff55' : '#9aa0c955');
+    // Wetter-Glow für ALLE Karten (durchscheinend sichtbar)
+    let wg;
+    if (code >= 95) wg = '#ffc94a66';           // Gewitter – warmer Blitz-Glow
+    else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) wg = '#4a7bff66'; // Regen
+    else if ((code >= 71 && code <= 77) || code === 85 || code === 86) wg = '#a8c8ff55'; // Schnee
+    else if (code === 3 || code === 45 || code === 48) wg = '#9aa0c944'; // Nebel/Bewölkt
+    else if (!c.is_day) wg = '#5a4aff55';       // Nacht
+    else if (code <= 2) wg = '#ffb84a66';       // Sonne
+    else wg = '#9aa0c955';
+    document.querySelectorAll('.card').forEach(el => el.style.setProperty('--wg', wg));
     const i0 = Math.max(0, hh.time.findIndex(t => t >= c.time.slice(0, 13) + ':00'));
     const hours = hh.time.slice(i0, i0 + 14).map((t, k) => `<div class="hr">${k ? t.slice(11, 13) + ' Uhr' : 'Jetzt'}${wIcon(hh.weather_code[i0 + k], hh.is_day[i0 + k])}<div>${Math.round(hh.temperature_2m[i0 + k])}°</div></div>`).join('');
     const days = d.time.slice(0, 5).map((t, i) => `<div class="dt">${i ? new Date(t + 'T00:00').toLocaleDateString('de-DE', { weekday: 'short' }) : 'Heute'}<br>${wIcon(d.weather_code[i])}<div>${Math.round(d.temperature_2m_max[i])}° <i>${Math.round(d.temperature_2m_min[i])}°</i></div><small>☔ ${d.precipitation_probability_max[i] ?? 0}%</small></div>`).join('');
@@ -769,8 +860,20 @@ function showTab(t) {
   if (t === 'ort') { initMap(); setTimeout(() => { map.invalidateSize(); const g = S.geo; if (g) { map.setView([g.lat, g.lon], 10); mark(g.lat, g.lon); } }, 80); }
 }
 document.querySelectorAll('.tab').forEach(b => b.onclick = () => showTab(b.dataset.tab));
-function openSet(tab) { $('sCity').value = (S.geo && S.geo.name) || S.city || ''; $('sGoogle').value = S.google; $('sApple').value = S.apple; if ($('sTrashIcs')) $('sTrashIcs').value = S.trashIcs || ''; $('sug').classList.add('hide'); $('sMsg').textContent = ''; sync(); $('dlg').showModal(); showTab(tab || 'anz'); }
-$('setbtn').onclick = () => openSet(); $('city').onclick = () => openSet('ort'); $('sDone').onclick = () => { $('dlg').close(); stopLayoutEdit(); };
+function openSet(tab) {
+  $('sCity').value = (S.geo && S.geo.name) || S.city || '';
+  $('sGoogle').value = S.google; $('sApple').value = S.apple;
+  if ($('sTrashIcs')) $('sTrashIcs').value = S.trashIcs || '';
+  if ($('sName')) $('sName').value = S.displayName || '';
+  $('sug').classList.add('hide'); $('sMsg').textContent = '';
+  sync(); $('dlg').showModal(); showTab(tab || 'anz');
+}
+$('setbtn').onclick = () => openSet(); $('city').onclick = () => openSet('ort');
+$('sDone').onclick = () => {
+  const name = ($('sName')?.value || '').trim();
+  if (name !== (S.displayName || '')) setS({ displayName: name });
+  $('dlg').close(); stopLayoutEdit();
+};
 $('refbtn').onclick = async () => {
   const b = $('refbtn'); b.classList.add('spinning');
   try { await Promise.all([loadWeather(), loadCalendars(), loadTrashIcs()]); } finally { setTimeout(() => b.classList.remove('spinning'), 600); }
@@ -783,15 +886,17 @@ let layoutEdit = false;
 function stopLayoutEdit() {
   layoutEdit = false;
   document.querySelector('.cards')?.classList.remove('edit-layout');
-  const btn = $('layoutEditBtn'); if (btn) btn.textContent = 'Module im Raster verschieben (Drag & Drop)';
+  const btn = $('layoutEditBtn'); if (btn) btn.textContent = 'Module verschieben & Größe ändern';
 }
 $('layoutEditBtn').onclick = () => {
   layoutEdit = !layoutEdit;
   const box = document.querySelector('.cards');
   box?.classList.toggle('edit-layout', layoutEdit);
-  $('layoutEditBtn').textContent = layoutEdit ? 'Fertig – Layout speichern' : 'Module verschieben (Drag & Drop)';
+  // auch Todo/Weather editierbar machen (Größen-Buttons)
+  document.querySelectorAll('[data-w]').forEach(c => c.classList.toggle('edit-layout-card', layoutEdit));
+  $('layoutEditBtn').textContent = layoutEdit ? 'Fertig – Layout speichern' : 'Module verschieben & Größe ändern';
   if (!layoutEdit) {
-    const order = [...box.querySelectorAll('[data-w]')].map(el => el.dataset.w);
+    const order = [...(box?.querySelectorAll('[data-w]') || [])].map(el => el.dataset.w);
     setS({ order });
   }
 };
@@ -830,6 +935,7 @@ $('layoutEditBtn').onclick = () => {
 })();
 $('dlg').addEventListener('click', e => { if (e.target === $('dlg')) $('dlg').close(); });
 $('sGoogle').addEventListener('change', () => setS({ google: $('sGoogle').value.trim() }));
+$('sName')?.addEventListener('change', () => setS({ displayName: $('sName').value.trim() }));
 $('sApple').addEventListener('change', () => setS({ apple: $('sApple').value.trim() }));
 $('sTrashIcs').addEventListener('change', () => setS({ trashIcs: $('sTrashIcs').value.trim() }));
 $('calTestBtn').onclick = async () => {
