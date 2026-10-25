@@ -113,16 +113,25 @@ header h1{font-size:26px;font-weight:900;letter-spacing:-.5px}
 .mrow{display:grid;grid-template-columns:34px 1fr;align-items:center;gap:8px;margin-bottom:5px}.mrow input{margin:0;padding:8px 12px;font-size:15px}.mrow b{color:var(--mut);font-size:13px}.mrow.today b{color:var(--mint)}.mrow.today input{border-color:#3ee0b566}
 #note{height:calc(100% - 60px);min-height:140px;resize:none;background:#ffe27a;color:#3b3200;font-weight:700;border-radius:8px 8px 22px 8px;box-shadow:0 10px 24px #0004;line-height:1.5}
 .cdn{min-width:64px;text-align:center;font-weight:900;font-size:22px;color:var(--sun);line-height:1}.cdn small{display:block;font-size:10px;color:var(--mut)}
-/* Wetter-Zeile */
-.wx{display:grid;grid-template-columns:minmax(230px,.85fr) 1.6fr;gap:18px;align-items:center}
-@media(max-width:699px){.wx{grid-template-columns:1fr}}
-.hero{display:flex;align-items:center;gap:12px}.hero svg{width:96px;height:96px;flex:none;filter:drop-shadow(0 10px 22px #0007)}
+/* Wetter – passt sich der Kartengröße an, nichts abschneiden */
+.wx{display:grid;gap:14px;align-items:start;min-width:0}
+.wx-wide{grid-template-columns:minmax(200px,.9fr) 1.5fr}
+.wx-md,.wx-sm{grid-template-columns:1fr}
+.wx-main{min-width:0}
+.wx-side{min-width:0;overflow:hidden}
+@media(max-width:699px){.wx-wide{grid-template-columns:1fr}}
+.hero{display:flex;align-items:center;gap:12px;min-width:0}.hero svg{width:96px;height:96px;flex:none;filter:drop-shadow(0 10px 22px #0007)}
+.wx-sm .hero svg,.wx-md .hero svg{width:56px;height:56px}
+.wx-sm .temp{font-size:36px;letter-spacing:-1px}
+.wx-md .temp{font-size:48px;letter-spacing:-1.5px}
 .temp{font-size:64px;font-weight:900;line-height:1;letter-spacing:-2px}.wt{font-weight:900;font-size:17px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.chip{background:#ffffff14;border-radius:14px;padding:5px 10px;font-size:12px;font-weight:700}
-.hours{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px;scrollbar-width:none}
+.hours{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .hr{flex:none;width:54px;background:#ffffff12;border-radius:16px;padding:6px 0;text-align:center;font-size:12px;font-weight:700}.hr svg{width:30px;height:30px}
-.dtiles{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.dt{background:#ffffff12;border-radius:16px;padding:7px 2px;text-align:center;font-size:13px;font-weight:700}.dt svg{width:34px;height:34px}.dt i{font-style:normal;color:var(--mut)}.dt small{display:block;font-size:11px;color:#8fbaff}
+.dtiles{display:grid;gap:6px;min-width:0}
+.dt{background:#ffffff12;border-radius:16px;padding:7px 2px;text-align:center;font-size:13px;font-weight:700;min-width:0}.dt svg{width:34px;height:34px}.dt i{font-style:normal;color:var(--mut)}.dt small{display:block;font-size:11px;color:#8fbaff}
+#cWeather .wx{overflow:visible}
+#cWeather{overflow:hidden}
 /* Einstellungen */
 dialog{border:0;border-radius:28px;background:linear-gradient(160deg,#2b3164,#1f2447);color:var(--txt);padding:0;width:min(560px,94vw);box-shadow:0 30px 80px #000a}
 dialog::backdrop{background:#000a}
@@ -157,11 +166,12 @@ label{font-size:13px;color:var(--mut);font-weight:700;display:block;margin:8px 0
 <div id="login" class="hide"><div class="lbox">
   <div class="logo"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg></div>
   <h1 id="ltitle">FamilyDash</h1><p id="lsub"></p>
-  <input id="lu" type="email" placeholder="E-Mail" autocomplete="username" value="fvonkhreninger@icloud.com" readonly>
-  <input id="lp" type="password" placeholder="Passwort" autocomplete="current-password">
+  <!-- E-Mail nur intern für Auth / Autocomplete, nicht sichtbar -->
+  <input id="lu" type="email" autocomplete="username" value="fvonkhreninger@icloud.com" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">
+  <input id="lp" type="password" placeholder="Passwort" autocomplete="current-password" autofocus>
   <input id="lp2" type="password" placeholder="Passwort wiederholen" class="hide" autocomplete="new-password">
-  <button id="lbtn" class="btn full">Weiter</button><div class="err" id="lerr"></div>
-  <p class="sub" style="margin-top:14px;line-height:1.4">Nur autorisierte E-Mail-Adresse. Konto wird bei der ersten Anmeldung angelegt.</p>
+  <button id="lbtn" class="btn full">Anmelden</button><div class="err" id="lerr"></div>
+  <p class="sub" style="margin-top:14px;line-height:1.4">Nur für autorisierte Nutzer. Konto wird bei der ersten Anmeldung angelegt.</p>
 </div></div>
 
 <div id="app" class="hide">
@@ -364,6 +374,7 @@ function applyOrder() {
     }
     btns.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.sz === sz));
   });
+  if (lastWx) renderWeatherUI();
 }
 document.addEventListener('click', e => { const b = e.target.closest('.tg'); if (b) setS({ [b.dataset.k]: !S[b.dataset.k] }); });
 async function wake() {
@@ -384,12 +395,13 @@ function showLogin(m) {
   const su = m === 'setup';
   $('ltitle').textContent = su ? 'Konto anlegen' : 'FamilyDash';
   $('lsub').textContent = su
-    ? 'Lege ein Passwort für ' + ALLOWED_EMAIL + ' fest (mind. 8 Zeichen).'
+    ? 'Lege ein Passwort fest (mind. 8 Zeichen).'
     : 'Melde dich mit deinem Passwort an.';
   $('lp2').classList.toggle('hide', !su);
   $('lbtn').textContent = su ? 'Konto erstellen' : 'Anmelden';
-  $('lu').value = ALLOWED_EMAIL;
+  if ($('lu')) $('lu').value = ALLOWED_EMAIL;
   $('lerr').textContent = '';
+  setTimeout(() => $('lp')?.focus(), 50);
 }
 
 function isAllowed(user) {
@@ -405,7 +417,7 @@ onAuthStateChanged(auth, async (user) => {
     if (user && !isAllowed(user)) {
       await signOut(auth);
       showLogin('login');
-      $('lerr').textContent = 'Nur ' + ALLOWED_EMAIL + ' hat Zugriff.';
+      $('lerr').textContent = 'Kein Zugriff mit diesem Konto.';
       return;
     }
     // Prüfen, ob das Konto schon existiert (für Setup-Hinweis)
@@ -621,6 +633,7 @@ document.addEventListener('click', async e => {
     const sizes = { ...(S.sizes || {}) };
     sizes[D.for] = D.sz;
     setS({ sizes });
+    if (D.for === 'Weather') setTimeout(renderWeatherUI, 30);
   }
   if (D.rm) remove(ref(db, D.rm));
   if (D.clr) Object.entries(D.clr === 'todos' ? todoD : shopD).forEach(([k, v]) => v.done && remove(ref(db, D.clr + '/' + k)));
@@ -665,6 +678,58 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) loop();
 
 async function geocode(q, n = 1) { return (await (await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=${n}&language=de`)).json()).results || []; }
 let geoMemo = null;
+let lastWx = null; // gecachte Wetterdaten für Größenwechsel
+
+function weatherCardSize() {
+  const el = $('cWeather');
+  if (!el) return 'md';
+  if (el.classList.contains('size-sm')) return 'sm';
+  if (el.classList.contains('size-lg')) return 'lg';
+  if (el.classList.contains('size-xl')) return 'xl';
+  if (el.classList.contains('size-wide')) return 'wide';
+  return 'md';
+}
+
+function renderWeatherUI() {
+  if (!lastWx || !$('weather')) return;
+  const { g, c, d, hh, code } = lastWx;
+  const sz = weatherCardSize();
+  // je nach Kartengröße: Stunden / Tage / Details
+  const nH = sz === 'sm' ? 0 : sz === 'md' ? 6 : sz === 'lg' ? 10 : 14;
+  const nD = sz === 'sm' ? 0 : sz === 'md' ? 3 : sz === 'lg' ? 4 : 5;
+  const showChips = sz !== 'sm';
+  const showHours = nH > 0;
+  const showDays = nD > 0;
+  const compact = sz === 'sm' || sz === 'md';
+
+  const i0 = Math.max(0, hh.time.findIndex(t => t >= c.time.slice(0, 13) + ':00'));
+  const hours = showHours ? hh.time.slice(i0, i0 + nH).map((t, k) =>
+    `<div class="hr">${k ? t.slice(11, 13) + ' Uhr' : 'Jetzt'}${wIcon(hh.weather_code[i0 + k], hh.is_day[i0 + k])}<div>${Math.round(hh.temperature_2m[i0 + k])}°</div></div>`
+  ).join('') : '';
+  const days = showDays ? d.time.slice(0, nD).map((t, i) =>
+    `<div class="dt">${i ? new Date(t + 'T00:00').toLocaleDateString('de-DE', { weekday: 'short' }) : 'Heute'}<br>${wIcon(d.weather_code[i])}<div>${Math.round(d.temperature_2m_max[i])}° <i>${Math.round(d.temperature_2m_min[i])}°</i></div><small>☔ ${d.precipitation_probability_max[i] ?? 0}%</small></div>`
+  ).join('') : '';
+
+  const heroIcon = compact
+    ? wIcon(code, c.is_day).replace('viewBox="0 0 64 64"', 'viewBox="0 0 64 64" style="width:56px;height:56px"')
+    : wIcon(code, c.is_day);
+
+  const chips = showChips
+    ? `<div class="chips"><span class="chip">💨 ${Math.round(c.wind_speed_10m)} km/h</span><span class="chip">💧 ${c.relative_humidity_2m}%</span>${sz !== 'md' ? `<span class="chip">🌅 ${d.sunrise[0].slice(11, 16)}</span><span class="chip">🌇 ${d.sunset[0].slice(11, 16)}</span>` : ''}</div>`
+    : '';
+
+  const right = (showHours || showDays)
+    ? `<div class="wx-side">${showHours ? `<div class="hours">${hours}</div>` : ''}${showDays ? `<div class="dtiles" style="grid-template-columns:repeat(${nD},1fr)">${days}</div>` : ''}</div>`
+    : '';
+
+  const layoutClass = (sz === 'wide' || sz === 'xl') ? 'wx wx-wide' : (sz === 'sm' ? 'wx wx-sm' : 'wx wx-md');
+  $('city').textContent = '📍 ' + g.name;
+  $('weather').innerHTML = `<div class="${layoutClass}">
+    <div class="wx-main"><div class="hero">${heroIcon}<div><div class="temp">${Math.round(c.temperature_2m)}°</div><div class="wt">${WTXT(code)}</div><div class="sub">gefühlt ${Math.round(c.apparent_temperature)}°</div></div></div>${chips}</div>
+    ${right}
+  </div>`;
+}
+
 async function loadWeather() {
   if (!S.showWeather) return;
   try {
@@ -672,23 +737,17 @@ async function loadWeather() {
     if (!g) { const r = geoMemo || (await geocode(S.city || 'München'))[0]; if (!r) { $('weather').innerHTML = '<div class="empty">Ort nicht gefunden.</div>'; return; } geoMemo = r; g = { name: r.name, lat: r.latitude, lon: r.longitude }; }
     const w = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${g.lat}&longitude=${g.lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&forecast_days=6&timezone=auto`)).json();
     const c = w.current, d = w.daily, hh = w.hourly, code = c.weather_code;
-    // Wetter-Glow für ALLE Karten (durchscheinend sichtbar)
+    lastWx = { g, c, d, hh, code };
     let wg;
-    if (code >= 95) wg = '#ffc94a66';           // Gewitter – warmer Blitz-Glow
-    else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) wg = '#4a7bff66'; // Regen
-    else if ((code >= 71 && code <= 77) || code === 85 || code === 86) wg = '#a8c8ff55'; // Schnee
-    else if (code === 3 || code === 45 || code === 48) wg = '#9aa0c944'; // Nebel/Bewölkt
-    else if (!c.is_day) wg = '#5a4aff55';       // Nacht
-    else if (code <= 2) wg = '#ffb84a66';       // Sonne
+    if (code >= 95) wg = '#ffc94a66';
+    else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) wg = '#4a7bff66';
+    else if ((code >= 71 && code <= 77) || code === 85 || code === 86) wg = '#a8c8ff55';
+    else if (code === 3 || code === 45 || code === 48) wg = '#9aa0c944';
+    else if (!c.is_day) wg = '#5a4aff55';
+    else if (code <= 2) wg = '#ffb84a66';
     else wg = '#9aa0c955';
     document.querySelectorAll('.card').forEach(el => el.style.setProperty('--wg', wg));
-    const i0 = Math.max(0, hh.time.findIndex(t => t >= c.time.slice(0, 13) + ':00'));
-    const hours = hh.time.slice(i0, i0 + 14).map((t, k) => `<div class="hr">${k ? t.slice(11, 13) + ' Uhr' : 'Jetzt'}${wIcon(hh.weather_code[i0 + k], hh.is_day[i0 + k])}<div>${Math.round(hh.temperature_2m[i0 + k])}°</div></div>`).join('');
-    const days = d.time.slice(0, 5).map((t, i) => `<div class="dt">${i ? new Date(t + 'T00:00').toLocaleDateString('de-DE', { weekday: 'short' }) : 'Heute'}<br>${wIcon(d.weather_code[i])}<div>${Math.round(d.temperature_2m_max[i])}° <i>${Math.round(d.temperature_2m_min[i])}°</i></div><small>☔ ${d.precipitation_probability_max[i] ?? 0}%</small></div>`).join('');
-    $('city').textContent = '📍 ' + g.name;
-    $('weather').innerHTML = `<div class="wx"><div><div class="hero">${wIcon(code, c.is_day)}<div><div class="temp">${Math.round(c.temperature_2m)}°</div><div class="wt">${WTXT(code)}</div><div class="sub">gefühlt ${Math.round(c.apparent_temperature)}°</div></div></div>
-      <div class="chips"><span class="chip">💨 ${Math.round(c.wind_speed_10m)} km/h</span><span class="chip">💧 ${c.relative_humidity_2m}%</span><span class="chip">🌅 ${d.sunrise[0].slice(11, 16)}</span><span class="chip">🌇 ${d.sunset[0].slice(11, 16)}</span></div></div>
-      <div><div class="hours">${hours}</div><div class="dtiles">${days}</div></div></div>`;
+    renderWeatherUI();
     setFx((code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95 ? 'rain' : (code >= 71 && code <= 77) || code === 85 || code === 86 ? 'snow' : code === 3 || code === 45 || code === 48 ? 'fog' : !c.is_day ? 'stars' : 'dust');
   } catch (e) { $('weather').innerHTML = '<div class="empty">Wetter gerade nicht erreichbar.</div>'; }
 }
